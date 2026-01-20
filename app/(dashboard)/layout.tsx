@@ -96,7 +96,7 @@ export default async function DashboardLayout({
                     )}
 
                     {/* Scrollable Page Content */}
-                    <div className="flex-1 overflow-y-auto p-4 lg:p-8 w-full">
+                    <div className="flex-1 overflow-y-auto p-3 md:p-4 lg:p-8 w-full">
                         <div className="max-w-7xl mx-auto w-full">
                             {children}
                         </div>

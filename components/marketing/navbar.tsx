@@ -15,9 +15,9 @@ export function Navbar() {
 
   return (
     <nav className="border-b border-border/40 bg-white sticky top-0 z-50">
-      <div className="w-full max-w-6xl mx-auto flex items-center justify-between md:grid md:grid-cols-[1fr_auto_1fr] px-4 md:px-6 h-20 md:h-16">
-        <Link href="/" className="flex items-center gap-3 font-bold text-3xl md:text-xl text-foreground tracking-tight" onClick={closeSheet}>
-          <Image src="/logo.png" alt="Wytis Logo" width={48} height={48} className="w-11 h-11 md:w-9 md:h-9" />
+      <div className="w-full max-w-6xl mx-auto flex items-center justify-between md:grid md:grid-cols-[1fr_auto_1fr] px-4 md:px-6 h-14 md:h-16">
+        <Link href="/" className="flex items-center gap-2 md:gap-3 font-bold text-lg md:text-xl text-foreground tracking-tight" onClick={closeSheet}>
+          <Image src="/logo.png" alt="Wytis Logo" width={48} height={48} className="w-7 h-7 md:w-9 md:h-9" />
           <span className="font-manrope">Wytis</span>
         </Link>
 
@@ -58,8 +58,8 @@ export function Navbar() {
         <div className="md:hidden flex items-center">
           <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="md:hidden w-14 h-14 -mr-4">
-                <Menu className="w-10 h-10" />
+              <Button variant="ghost" size="icon" className="md:hidden w-10 h-10 -mr-2">
+                <Menu className="w-6 h-6" />
                 <span className="sr-only">Toggle menu</span>
               </Button>
             </SheetTrigger>

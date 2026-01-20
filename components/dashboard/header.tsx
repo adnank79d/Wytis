@@ -51,9 +51,21 @@ export function Header({ userRole, businessName, userEmail, userName }: HeaderPr
         : userEmail?.substring(0, 2).toUpperCase() || "U";
 
     return (
-        <header className="w-full h-14 border-b bg-background/80 backdrop-blur-md supports-[backdrop-filter]:bg-background/60 flex items-center justify-center px-4 lg:px-6 sticky top-0 z-30 shrink-0 transition-all duration-300">
-            {/* 1. LEFT SECTION: Logo & Mobile Toggle */}
-            <div className="flex items-center gap-4 min-w-[200px]">
+        <header className="w-full h-12 md:h-14 border-b bg-background/80 backdrop-blur-md supports-[backdrop-filter]:bg-background/60 flex items-center justify-between px-3 md:px-4 lg:px-6 sticky top-0 z-30 shrink-0 transition-all duration-300">
+            {/* 1. LEFT SECTION: Logo + Mobile Toggle */}
+            <div className="flex items-center gap-2 md:gap-4 min-w-0 md:min-w-[200px]">
+                {/* Logo - visible on both mobile and desktop */}
+                <Link href="/dashboard" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+                    <Image
+                        src="/logo.png"
+                        alt="Wytis"
+                        width={100}
+                        height={32}
+                        className="h-5 md:h-6 w-auto object-contain"
+                        priority
+                    />
+                </Link>
+
                 {/* Mobile Sidebar Trigger */}
                 <Sheet>
                     <SheetTrigger asChild>
@@ -62,8 +74,8 @@ export function Header({ userRole, businessName, userEmail, userName }: HeaderPr
                             <span className="sr-only">Toggle menu</span>
                         </Button>
                     </SheetTrigger>
-                    <SheetContent side="left" className="p-0 border-r w-64">
-                        <div className="flex items-center h-14 border-b px-6">
+                    <SheetContent side="left" className="p-0 border-r w-72">
+                        <div className="flex items-center h-12 border-b px-4">
                             <Link href="/dashboard" className="flex items-center gap-2">
                                 <Image
                                     src="/logo.png"
@@ -75,29 +87,18 @@ export function Header({ userRole, businessName, userEmail, userName }: HeaderPr
                                 />
                             </Link>
                         </div>
-                        <Sidebar className="border-none" />
+                        <Sidebar isMobile={true} className="border-none" />
                     </SheetContent>
                 </Sheet>
-
-                <Link href="/dashboard" className="hidden md:flex items-center gap-2 hover:opacity-80 transition-opacity">
-                    <Image
-                        src="/logo.png"
-                        alt="Wytis"
-                        width={100}
-                        height={32}
-                        className="h-6 w-auto object-contain"
-                        priority
-                    />
-                </Link>
             </div>
 
-            {/* 2. CENTER SECTION: Global Search */}
-            <div className="flex-1 flex justify-center max-w-xl mx-auto px-6">
+            {/* 2. CENTER SECTION: Global Search - Hidden on mobile */}
+            <div className="hidden md:flex flex-1 justify-center max-w-xl mx-auto px-6">
                 <SearchBar />
             </div>
 
             {/* 3. RIGHT SECTION: Business & User */}
-            <div className="flex items-center justify-end gap-2 lg:gap-4 min-w-[200px]">
+            <div className="flex items-center justify-end gap-1 md:gap-2 lg:gap-4 min-w-0 md:min-w-[200px]">
                 {/* Business Context Indicator (Read-only) */}
                 {businessName && (
                     <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-muted-foreground select-none bg-muted/50 rounded-full border border-transparent hover:border-border transition-all">
@@ -111,12 +112,12 @@ export function Header({ userRole, businessName, userEmail, userName }: HeaderPr
                 <div className="relative" ref={menuRef}>
                     <Button
                         variant="ghost"
-                        className="relative h-8 w-8 rounded-full ring-2 ring-transparent hover:ring-primary/20 transition-all"
+                        className="relative h-7 w-7 md:h-8 md:w-8 rounded-full ring-2 ring-transparent hover:ring-primary/20 transition-all"
                         onClick={() => setIsMenuOpen(!isMenuOpen)}
                     >
-                        <Avatar className="h-8 w-8 border">
+                        <Avatar className="h-7 w-7 md:h-8 md:w-8 border">
                             <AvatarImage src="/placeholder-user.jpg" alt="@user" />
-                            <AvatarFallback className="bg-primary/5 text-xs text-primary font-bold">{userInitials}</AvatarFallback>
+                            <AvatarFallback className="bg-primary/5 text-[10px] md:text-xs text-primary font-bold">{userInitials}</AvatarFallback>
                         </Avatar>
                     </Button>
 
