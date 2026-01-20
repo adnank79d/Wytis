@@ -1,0 +1,64 @@
+'use server'
+
+import { createClient } from "@/lib/supabase/server";
+import { revalidatePath } from "next/cache";
+
+export type Notification = {
+    id: string;
+    user_id: string;
+    business_id: string | null;
+    title: string;
+    message: string;
+    type: 'info' | 'success' | 'warning' | 'error';
+    read: boolean;
+    link: string | null;
+    created_at: string;
+};
+
+export async function getNotifications() {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+        return [];
+    }
+
+    const { data, error } = await supabase
+        .from('notifications')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(20);
+
+    if (error) {
+        console.error('Error fetching notifications:', error);
+        return [];
+    }
+
+    return data as Notification[];
+}
+
+export async function markAsRead(notificationId: string) {
+    const supabase = await createClient();
+
+    await supabase
+        .from('notifications')
+        .update({ read: true })
+        .eq('id', notificationId);
+
+    revalidatePath('/dashboard');
+}
+
+export async function markAllAsRead() {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) return;
+
+    await supabase
+        .from('notifications')
+        .update({ read: true })
+        .eq('user_id', user.id);
+
+    revalidatePath('/dashboard');
+}
