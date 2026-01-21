@@ -52,6 +52,7 @@ export default function SignupPage() {
             email: values.email,
             password: values.password,
             options: {
+                emailRedirectTo: `${window.location.origin}/auth/callback`,
                 data: {
                     first_name: values.firstName,
                     last_name: values.lastName,

@@ -51,7 +51,7 @@ export function Header({ userRole, businessName, userEmail, userName }: HeaderPr
         : userEmail?.substring(0, 2).toUpperCase() || "U";
 
     return (
-        <header className="w-full h-12 md:h-14 border-b bg-background/80 backdrop-blur-md supports-[backdrop-filter]:bg-background/60 flex items-center justify-between px-3 md:px-4 lg:px-6 sticky top-0 z-30 shrink-0 transition-all duration-300">
+        <header className="w-full h-14 md:h-16 border-b border-border/40 bg-background/95 backdrop-blur-xl supports-[backdrop-filter]:bg-background/80 flex items-center justify-between px-4 md:px-5 lg:px-6 sticky top-0 z-30 shrink-0 transition-all duration-300">
             {/* 1. LEFT SECTION: Logo + Mobile Toggle */}
             <div className="flex items-center gap-2 md:gap-4 min-w-0 md:min-w-[200px]">
                 {/* Logo - visible on both mobile and desktop */}

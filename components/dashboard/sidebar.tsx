@@ -49,37 +49,40 @@ interface SidebarProps {
 
 export function Sidebar({ className, isMobile = false, onNavigate }: SidebarProps) {
     const pathname = usePathname();
-    const [isCollapsed, setIsCollapsed] = React.useState(false);
+    const [isCollapsed, setIsCollapsed] = React.useState(!isMobile); // Default collapsed on desktop
     const [isMounted, setIsMounted] = React.useState(false);
 
     React.useEffect(() => {
         setIsMounted(true);
-        if (!isMobile) {
-            const saved = localStorage.getItem("wytis-sidebar-collapsed");
-            if (saved) {
-                setIsCollapsed(saved === "true");
-            }
+        if (isMobile) {
+            setIsCollapsed(false);
         }
     }, [isMobile]);
 
-    const toggleCollapse = () => {
-        const newState = !isCollapsed;
-        setIsCollapsed(newState);
-        localStorage.setItem("wytis-sidebar-collapsed", String(newState));
+    // Auto-collapse logic
+    const handleMouseEnter = () => {
+        if (!isMobile) setIsCollapsed(false);
     };
 
-    // For mobile, never collapse
+    const handleMouseLeave = () => {
+        if (!isMobile) setIsCollapsed(true);
+    };
+
+    // For mobile, never collapse (it's in a sheet)
     const effectiveCollapsed = isMobile ? false : isCollapsed;
 
     if (!isMounted) {
-        return <div className={cn("w-64 border-r bg-background flex flex-col h-full", className)} />; // Skeleton state
+        return <div className={cn("w-[70px] border-r bg-background flex flex-col h-full", className)} />; // Skeleton state (collapsed default)
     }
 
     return (
         <div
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+            style={{ transition: 'width 200ms cubic-bezier(0.25, 0.46, 0.45, 0.94)' }}
             className={cn(
-                "border-r bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 flex flex-col h-full transition-all duration-300 ease-in-out relative group z-20",
-                effectiveCollapsed ? "w-[70px]" : "w-64",
+                "border-r bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 flex flex-col h-full relative group z-20",
+                effectiveCollapsed ? "w-[70px]" : "w-56",
                 isMobile && "border-none w-full",
                 className
             )}
@@ -119,9 +122,14 @@ export function Sidebar({ className, isMobile = false, onNavigate }: SidebarProp
                                     isActive && "scale-110"
                                 )} />
                                 <span
+                                    style={{
+                                        transition: effectiveCollapsed
+                                            ? 'opacity 100ms ease-out, transform 100ms ease-out'
+                                            : 'opacity 150ms ease-out 50ms, transform 150ms ease-out 50ms'
+                                    }}
                                     className={cn(
-                                        "truncate transition-all duration-300 origin-left",
-                                        effectiveCollapsed ? "w-0 opacity-0 overflow-hidden absolute left-10 scale-0" : "w-auto opacity-100 scale-100"
+                                        "truncate whitespace-nowrap",
+                                        effectiveCollapsed ? "opacity-0 scale-95 w-0 overflow-hidden" : "opacity-100 scale-100"
                                     )}
                                 >
                                     {route.label}
@@ -132,15 +140,7 @@ export function Sidebar({ className, isMobile = false, onNavigate }: SidebarProp
                 </nav>
             </ScrollArea>
 
-            {/* Floating Toggle Button - only show on desktop */}
-            {!isMobile && (
-                <button
-                    onClick={toggleCollapse}
-                    className="absolute -right-3 top-20 z-50 h-6 w-6 rounded-full border bg-background shadow-md flex items-center justify-center text-muted-foreground hover:text-primary transition-all hover:scale-110 hover:shadow-lg opacity-0 group-hover:opacity-100 lg:opacity-100"
-                >
-                    {effectiveCollapsed ? <ChevronsRight className="h-3 w-3" /> : <ChevronsLeft className="h-3 w-3" />}
-                </button>
-            )}
+            {/* No manual toggle button anymore */}
         </div>
     );
 }
