@@ -18,7 +18,6 @@ interface AddProductFormProps {
 
 export function AddProductForm({ categories }: AddProductFormProps) {
     const initialState: ProductFormState = { message: null, errors: {} };
-    // @ts-expect-error useActionState types issue
     const [state, formAction, isPending] = useActionState(addProduct, initialState);
 
     return (
