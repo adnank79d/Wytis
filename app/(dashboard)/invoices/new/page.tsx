@@ -1,5 +1,4 @@
 import { createClient } from "@/lib/supabase/server";
-// redirect is removed
 import { getCustomers } from "@/lib/actions/invoices";
 import { NewInvoiceForm } from "@/components/invoices/new-invoice-form";
 import { Role, can, PERMISSIONS } from "@/lib/permissions";
@@ -9,13 +8,11 @@ export const dynamic = 'force-dynamic';
 
 export default async function NewInvoicePage() {
     const supabase = await createClient();
-    // Relaxed Server Check: We try to get session, but don't redirect if missing.
-    // We let the ClientGuard handle the redirect.
     const { data: { session } } = await supabase.auth.getSession();
     const user = session?.user;
 
-    // We still try to fetch role/business, but gracefully handle failure
     let existingCustomers: { id: string; name: string; tax_id: string | null }[] = [];
+    let inventoryProducts: { id: string; name: string; sku: string | null; unit_price: number; gst_rate: number; quantity: number }[] = [];
     let accessDenied = false;
     let isTrialExpired = false;
 
@@ -36,21 +33,19 @@ export default async function NewInvoicePage() {
                 accessDenied = true;
             } else {
                 existingCustomers = await getCustomers();
+
+                // Fetch inventory products
+                const { data: products } = await supabase
+                    .from('inventory_products')
+                    .select('id, name, sku, unit_price, gst_rate, quantity')
+                    .eq('business_id', membership.business_id)
+                    .eq('is_active', true)
+                    .order('name');
+
+                inventoryProducts = (products || []) as typeof inventoryProducts;
             }
         }
     }
-
-    // Design: If user is missing on server, we render ClientGuard. 
-    // ClientGuard checks client session -> if exists, it renders children.
-    // CHILDREN content: We need to handle the case where 'user' was null on server but exists on client?
-    // Actually, if 'user' is null on server, we can't fetch customers!
-    // So if ClientGuard says "Logged In", but Server said "No User", we have a mismatch.
-    // Ideally, ClientGuard triggers a router.refresh() if it detects session but page content is empty.
-
-    // For now, simpler: If session missing, rendering ClientGuard will eventually redirect to login if client agrees.
-    // If client thinks logged in, it shows children. Children might be empty/broken if server failed?
-    // Let's pass 'existingCustomers' as prop. If empty, dropdown is empty. 
-    // User can refresh manually or middleware fix should happen eventually.
 
     return (
         <ClientGuard>
@@ -70,7 +65,10 @@ export default async function NewInvoicePage() {
                         <p className="text-muted-foreground">Fill in the details below to generate a new invoice.</p>
                     </div>
 
-                    <NewInvoiceForm existingCustomers={existingCustomers} />
+                    <NewInvoiceForm
+                        existingCustomers={existingCustomers}
+                        inventoryProducts={inventoryProducts}
+                    />
                 </div>
             )}
         </ClientGuard>

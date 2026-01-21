@@ -59,14 +59,25 @@ type Customer = {
     tax_id?: string | null;
 };
 
+type InventoryProduct = {
+    id: string;
+    name: string;
+    sku: string | null;
+    unit_price: number;
+    gst_rate: number;
+    quantity: number;
+};
+
 interface NewInvoiceFormProps {
     existingCustomers: Customer[];
+    inventoryProducts?: InventoryProduct[];
 }
 
-export function NewInvoiceForm({ existingCustomers }: NewInvoiceFormProps) {
+export function NewInvoiceForm({ existingCustomers, inventoryProducts = [] }: NewInvoiceFormProps) {
     const router = useRouter();
     const [openCustomerCombo, setOpenCustomerCombo] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [openProductCombo, setOpenProductCombo] = useState<number | null>(null);
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -267,9 +278,72 @@ export function NewInvoiceForm({ existingCustomers }: NewInvoiceFormProps) {
                                                 control={form.control}
                                                 name={`items.${index}.description`}
                                                 render={({ field }) => (
-                                                    <FormControl>
-                                                        <Input {...field} placeholder="Item name" />
-                                                    </FormControl>
+                                                    <Popover
+                                                        open={openProductCombo === index}
+                                                        onOpenChange={(open) => setOpenProductCombo(open ? index : null)}
+                                                    >
+                                                        <PopoverTrigger asChild>
+                                                            <FormControl>
+                                                                <Button
+                                                                    variant="outline"
+                                                                    role="combobox"
+                                                                    className={cn(
+                                                                        "w-full justify-between font-normal",
+                                                                        !field.value && "text-muted-foreground"
+                                                                    )}
+                                                                >
+                                                                    {field.value || "Select product"}
+                                                                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                                                </Button>
+                                                            </FormControl>
+                                                        </PopoverTrigger>
+                                                        <PopoverContent className="w-[300px] p-0">
+                                                            <Command>
+                                                                <CommandInput placeholder="Search products..." className="h-9" />
+                                                                <CommandList>
+                                                                    <CommandEmpty>No products found.</CommandEmpty>
+                                                                    <CommandGroup>
+                                                                        {inventoryProducts.map((product) => (
+                                                                            <CommandItem
+                                                                                value={product.name}
+                                                                                key={product.id}
+                                                                                onSelect={() => {
+                                                                                    form.setValue(`items.${index}.description`, product.name);
+                                                                                    form.setValue(`items.${index}.unit_price`, product.unit_price);
+                                                                                    form.setValue(`items.${index}.gst_rate`, product.gst_rate);
+                                                                                    setOpenProductCombo(null);
+                                                                                }}
+                                                                            >
+                                                                                <div className="flex flex-col">
+                                                                                    <span>{product.name}</span>
+                                                                                    <span className="text-xs text-muted-foreground">
+                                                                                        ₹{product.unit_price} | GST: {product.gst_rate}%
+                                                                                    </span>
+                                                                                </div>
+                                                                                <Check
+                                                                                    className={cn(
+                                                                                        "ml-auto h-4 w-4",
+                                                                                        product.name === field.value
+                                                                                            ? "opacity-100"
+                                                                                            : "opacity-0"
+                                                                                    )}
+                                                                                />
+                                                                            </CommandItem>
+                                                                        ))}
+                                                                    </CommandGroup>
+                                                                </CommandList>
+                                                            </Command>
+                                                            {/* Manual input fallback */}
+                                                            <div className="p-2 border-t">
+                                                                <Input
+                                                                    placeholder="Or type custom item..."
+                                                                    value={field.value}
+                                                                    onChange={(e) => field.onChange(e.target.value)}
+                                                                    className="h-8 text-sm"
+                                                                />
+                                                            </div>
+                                                        </PopoverContent>
+                                                    </Popover>
                                                 )}
                                             />
                                         </TableCell>
