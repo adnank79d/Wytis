@@ -148,10 +148,10 @@ export function MainDashboard({ metrics, activity, subscription, userRole, userN
                     />
                 </div>
 
-                {/* 5. CREDIT PAYABLE */}
+                {/* 5. PAYABLES */}
                 <div className="col-span-1 row-span-1">
                     <KpiCard
-                        label="Credit Payable"
+                        label="Payables"
                         value={isRestricted ? "Restricted" : formatCompactCurrency(metrics.payables)}
                         caption="Amount to Pay"
                         icon={isRestricted ? Lock : FilePlus}
