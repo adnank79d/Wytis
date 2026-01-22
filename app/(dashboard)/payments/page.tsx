@@ -113,16 +113,17 @@ export default async function PaymentsPage({
         }
     };
 
-    const getStatusBadge = (status: string) => {
+    const getStatusBadge = (status: string, compact = false) => {
+        const text = compact ? status.charAt(0).toUpperCase() : status.charAt(0).toUpperCase() + status.slice(1);
         switch (status) {
             case 'completed':
-                return <Badge variant="default" className="bg-green-600 hover:bg-green-700">Completed</Badge>;
+                return <Badge variant="default" className="bg-green-600 hover:bg-green-700 text-[10px] md:text-xs px-1.5 md:px-2">{compact ? '✓' : 'Completed'}</Badge>;
             case 'pending':
-                return <Badge variant="secondary" className="bg-amber-100 text-amber-700">Pending</Badge>;
+                return <Badge variant="secondary" className="bg-amber-100 text-amber-700 text-[10px] md:text-xs px-1.5 md:px-2">{compact ? '...' : 'Pending'}</Badge>;
             case 'failed':
-                return <Badge variant="destructive">Failed</Badge>;
+                return <Badge variant="destructive" className="text-[10px] md:text-xs px-1.5 md:px-2">{compact ? '✗' : 'Failed'}</Badge>;
             default:
-                return <Badge variant="outline">{status}</Badge>;
+                return <Badge variant="outline" className="text-[10px] md:text-xs px-1.5 md:px-2">{status}</Badge>;
         }
     };
 
@@ -285,43 +286,55 @@ export default async function PaymentsPage({
                             key={payment.id}
                             className="rounded-xl md:rounded-2xl border border-border/40 bg-card shadow-sm hover:shadow-md hover:border-primary/30 transition-all duration-300"
                         >
-                            <CardContent className="p-4 md:p-5">
-                                <div className="flex items-center justify-between gap-4">
-                                    <div className="flex items-center gap-3 md:gap-4">
+                            <CardContent className="p-3 md:p-5">
+                                {/* Mobile: Stacked layout */}
+                                <div className="flex items-start justify-between gap-2 md:gap-4">
+                                    <div className="flex items-start gap-2.5 md:gap-4 flex-1 min-w-0">
                                         <div className={cn(
-                                            "h-10 w-10 md:h-12 md:w-12 rounded-lg md:rounded-xl flex items-center justify-center shrink-0",
+                                            "h-9 w-9 md:h-12 md:w-12 rounded-lg md:rounded-xl flex items-center justify-center shrink-0 mt-0.5",
                                             payment.payment_type === 'received'
                                                 ? "bg-emerald-50 dark:bg-emerald-950/30"
                                                 : "bg-rose-50 dark:bg-rose-950/30"
                                         )}>
                                             {payment.payment_type === 'received' ? (
-                                                <ArrowDownLeft className="h-5 w-5 text-emerald-600" />
+                                                <ArrowDownLeft className="h-4 w-4 md:h-5 md:w-5 text-emerald-600" />
                                             ) : (
-                                                <ArrowUpRight className="h-5 w-5 text-rose-600" />
+                                                <ArrowUpRight className="h-4 w-4 md:h-5 md:w-5 text-rose-600" />
                                             )}
                                         </div>
-                                        <div className="min-w-0">
-                                            <p className="font-semibold text-sm md:text-base text-foreground truncate">
-                                                {payment.party_name}
-                                            </p>
-                                            <div className="flex items-center gap-2 mt-0.5">
+                                        <div className="min-w-0 flex-1">
+                                            <div className="flex items-center gap-2">
+                                                <p className="font-semibold text-sm md:text-base text-foreground truncate">
+                                                    {payment.party_name}
+                                                </p>
+                                                {/* Show compact badge on mobile */}
+                                                <span className="md:hidden shrink-0">
+                                                    {getStatusBadge(payment.status, true)}
+                                                </span>
+                                            </div>
+                                            <div className="flex flex-wrap items-center gap-1.5 md:gap-2 mt-0.5">
                                                 <span className="text-[10px] md:text-xs text-muted-foreground">
                                                     {formatDate(payment.payment_date)}
                                                 </span>
-                                                <span className="text-muted-foreground">•</span>
-                                                <span className="text-[10px] md:text-xs text-muted-foreground capitalize flex items-center gap-1">
+                                                <span className="hidden md:inline text-muted-foreground">•</span>
+                                                <span className="hidden md:flex text-[10px] md:text-xs text-muted-foreground capitalize items-center gap-1">
                                                     {getMethodIcon(payment.payment_method)}
                                                     {payment.payment_method}
                                                 </span>
                                                 {payment.invoice && (
                                                     <>
-                                                        <span className="text-muted-foreground">•</span>
+                                                        <span className="text-muted-foreground hidden md:inline">•</span>
                                                         <span className="text-[10px] md:text-xs text-primary">
                                                             #{(payment.invoice as { invoice_number: string }).invoice_number}
                                                         </span>
                                                     </>
                                                 )}
                                             </div>
+                                            {/* Mobile: Show method inline */}
+                                            <span className="md:hidden text-[10px] text-muted-foreground capitalize flex items-center gap-1 mt-1">
+                                                {getMethodIcon(payment.payment_method)}
+                                                {payment.payment_method}
+                                            </span>
                                         </div>
                                     </div>
                                     <div className="text-right shrink-0">
@@ -332,13 +345,14 @@ export default async function PaymentsPage({
                                             {payment.payment_type === 'received' ? '+' : '-'}
                                             {formatCurrency(payment.amount)}
                                         </p>
-                                        <div className="mt-1">
+                                        {/* Desktop: Full badge */}
+                                        <div className="hidden md:block mt-1">
                                             {getStatusBadge(payment.status)}
                                         </div>
                                     </div>
                                 </div>
                                 {payment.notes && (
-                                    <p className="text-xs text-muted-foreground mt-3 pt-3 border-t border-border/30">
+                                    <p className="text-[10px] md:text-xs text-muted-foreground mt-2 md:mt-3 pt-2 md:pt-3 border-t border-border/30 line-clamp-2">
                                         {payment.notes}
                                     </p>
                                 )}
