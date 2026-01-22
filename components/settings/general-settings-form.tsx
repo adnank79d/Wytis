@@ -3,19 +3,11 @@
 import { useActionState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { updateBusiness, UpdateBusinessState } from "@/lib/actions/business";
-import { Loader2, Upload, Building2 } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Loader2, Building2, Save } from "lucide-react";
 import { toast } from "sonner";
-import { FieldGroup, FieldRow } from "@/components/settings/field-row";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
-
 
 type Business = {
     id: string;
@@ -31,13 +23,13 @@ type Business = {
 const initialState: UpdateBusinessState = { message: null, errors: {} };
 
 export function GeneralSettingsForm({ business }: { business: Business }) {
-    // @ts-expect-error - useActionState types might be in flux in RC/Beta versions
+    // @ts-expect-error - useActionState types might be in flux
     const [state, formAction, isPending] = useActionState(updateBusiness, initialState);
 
     useEffect(() => {
         if (state.message) {
             if (state.message.includes("Success")) {
-                toast.success("Settings updated.");
+                toast.success("Settings updated successfully.");
             } else {
                 toast.error(state.message);
             }
@@ -45,106 +37,133 @@ export function GeneralSettingsForm({ business }: { business: Business }) {
     }, [state.message]);
 
     return (
-        <form action={formAction} className="space-y-6 animate-in fade-in-50 slide-in-from-bottom-2 duration-500">
+        <form action={formAction} className="space-y-4 md:space-y-6">
             <input type="hidden" name="business_id" value={business.id} />
 
-            {/* Identity Group */}
-            <FieldGroup title="Identity">
-                {/* Logo Row */}
-                <FieldRow label="Workspace Icon" description="Used on invoices and sidebar.">
-                    <div className="flex items-center gap-4">
-                        <Avatar className="h-10 w-10 border border-border/50 rounded-lg">
-                            <AvatarImage src="" />
-                            <AvatarFallback className="rounded-lg bg-orange-100 text-orange-700 font-bold">
-                                <Building2 className="h-5 w-5" />
-                            </AvatarFallback>
-                        </Avatar>
-                        <Button variant="outline" size="sm" type="button" className="h-8 text-xs bg-transparent border-dashed text-muted-foreground hover:text-foreground" disabled>
-                            Upload
-                        </Button>
-                    </div>
-                </FieldRow>
-
-                {/* Name Row */}
-                <FieldRow label="Workspace Name">
-                    <Input
-                        name="name"
-                        defaultValue={business.name}
-                        className="h-8 w-[240px] text-right border-none bg-transparent shadow-none focus-visible:ring-0 focus-visible:bg-muted/50 transition-colors rounded-sm px-2 font-medium"
-                        placeholder="Enter name..."
-                    />
-                </FieldRow>
-            </FieldGroup>
-
-
-            {/* Billing Group */}
-            <FieldGroup title="Billing Information">
-                {/* Tax ID */}
-                <FieldRow label="GST / VAT Number">
-                    <Input
-                        name="gst_number"
-                        defaultValue={business.gst_number || ''}
-                        className="h-8 w-[240px] text-right border-none bg-transparent shadow-none focus-visible:ring-0 focus-visible:bg-muted/50 transition-colors rounded-sm px-2 font-mono text-sm"
-                        placeholder="Optional"
-                    />
-                </FieldRow>
-
-                {/* Address */}
-                <FieldRow label="Address Line 1">
-                    <Input
-                        name="address_line1"
-                        defaultValue={business.address_line1 || ''}
-                        className="h-8 w-[300px] text-right border-none bg-transparent shadow-none focus-visible:ring-0 focus-visible:bg-muted/50 transition-colors rounded-sm px-2"
-                        placeholder="Street address..."
-                    />
-                </FieldRow>
-
-                <FieldRow label="Address Line 2">
-                    <Input
-                        name="address_line2"
-                        defaultValue={business.address_line2 || ''}
-                        className="h-8 w-[300px] text-right border-none bg-transparent shadow-none focus-visible:ring-0 focus-visible:bg-muted/50 transition-colors rounded-sm px-2"
-                        placeholder="Apt, Suite..."
-                    />
-                </FieldRow>
-
-                <div className="grid grid-cols-2 divide-x divide-border/40 border-t border-border/40">
-                    <div className="p-4 flex flex-col gap-1 hover:bg-muted/30 transition-colors">
-                        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">City</span>
+            {/* Business Identity */}
+            <Card className="rounded-xl md:rounded-2xl border border-border/40 shadow-sm">
+                <CardHeader className="pb-3">
+                    <CardTitle className="text-base md:text-lg font-semibold flex items-center gap-2">
+                        <Building2 className="h-4 w-4 md:h-5 md:w-5 text-primary" />
+                        Business Identity
+                    </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="name" className="text-sm font-medium">Business Name *</Label>
                         <Input
-                            name="city"
-                            defaultValue={business.city || ''}
-                            className="h-7 px-0 border-none shadow-none focus-visible:ring-0 bg-transparent font-medium"
-                            placeholder="New Delhi"
+                            id="name"
+                            name="name"
+                            defaultValue={business.name}
+                            className="h-10 md:h-11 bg-background border-border/60 rounded-lg"
+                            placeholder="Your business name"
+                            required
+                        />
+                        {state.errors?.name && (
+                            <p className="text-xs text-red-500">{state.errors.name[0]}</p>
+                        )}
+                    </div>
+
+                    <div className="space-y-2">
+                        <Label htmlFor="gst_number" className="text-sm font-medium">GST Number</Label>
+                        <Input
+                            id="gst_number"
+                            name="gst_number"
+                            defaultValue={business.gst_number || ''}
+                            className="h-10 md:h-11 bg-background border-border/60 rounded-lg font-mono"
+                            placeholder="22AAAAA0000A1Z5"
+                        />
+                        <p className="text-[10px] md:text-xs text-muted-foreground">
+                            This will appear on your invoices.
+                        </p>
+                    </div>
+                </CardContent>
+            </Card>
+
+            {/* Address */}
+            <Card className="rounded-xl md:rounded-2xl border border-border/40 shadow-sm">
+                <CardHeader className="pb-3">
+                    <CardTitle className="text-base md:text-lg font-semibold">
+                        Business Address
+                    </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="address_line1" className="text-sm font-medium">Address Line 1</Label>
+                        <Input
+                            id="address_line1"
+                            name="address_line1"
+                            defaultValue={business.address_line1 || ''}
+                            className="h-10 md:h-11 bg-background border-border/60 rounded-lg"
+                            placeholder="Street address"
                         />
                     </div>
-                    <div className="p-4 flex flex-col gap-1 hover:bg-muted/30 transition-colors">
-                        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">State / Region</span>
+
+                    <div className="space-y-2">
+                        <Label htmlFor="address_line2" className="text-sm font-medium">Address Line 2</Label>
                         <Input
-                            name="state"
-                            defaultValue={business.state || ''}
-                            className="h-7 px-0 border-none shadow-none focus-visible:ring-0 bg-transparent font-medium"
-                            placeholder="Delhi"
+                            id="address_line2"
+                            name="address_line2"
+                            defaultValue={business.address_line2 || ''}
+                            className="h-10 md:h-11 bg-background border-border/60 rounded-lg"
+                            placeholder="Apartment, suite, building..."
                         />
                     </div>
-                </div>
-                {/* Pincode Row (Full Width Bottom) */}
-                <div className="p-4 flex items-center justify-between border-t border-border/40 hover:bg-muted/30 transition-colors">
-                    <span className="text-sm font-medium">Postal Code</span>
-                    <Input
-                        name="pincode"
-                        defaultValue={business.pincode || ''}
-                        className="h-8 w-[120px] text-right border-none bg-transparent shadow-none focus-visible:ring-0 focus-visible:bg-muted/50 px-2"
-                        placeholder="110001"
-                    />
-                </div>
-            </FieldGroup>
 
-            {/* Save Area */}
-            <div className="flex justify-end pt-4">
-                <Button type="submit" disabled={isPending} className="min-w-[120px]">
-                    {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Save Changes
+                    <div className="grid grid-cols-2 gap-3 md:gap-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="city" className="text-sm font-medium">City</Label>
+                            <Input
+                                id="city"
+                                name="city"
+                                defaultValue={business.city || ''}
+                                className="h-10 md:h-11 bg-background border-border/60 rounded-lg"
+                                placeholder="Mumbai"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="state" className="text-sm font-medium">State</Label>
+                            <Input
+                                id="state"
+                                name="state"
+                                defaultValue={business.state || ''}
+                                className="h-10 md:h-11 bg-background border-border/60 rounded-lg"
+                                placeholder="Maharashtra"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="space-y-2">
+                        <Label htmlFor="pincode" className="text-sm font-medium">Postal Code</Label>
+                        <Input
+                            id="pincode"
+                            name="pincode"
+                            defaultValue={business.pincode || ''}
+                            className="h-10 md:h-11 w-full md:w-1/2 bg-background border-border/60 rounded-lg"
+                            placeholder="400001"
+                        />
+                    </div>
+                </CardContent>
+            </Card>
+
+            {/* Save Button */}
+            <div className="flex justify-end pt-2">
+                <Button
+                    type="submit"
+                    disabled={isPending}
+                    className="rounded-lg px-6 bg-gradient-to-r from-primary to-primary/90"
+                >
+                    {isPending ? (
+                        <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Saving...
+                        </>
+                    ) : (
+                        <>
+                            <Save className="mr-2 h-4 w-4" />
+                            Save Changes
+                        </>
+                    )}
                 </Button>
             </div>
         </form>
