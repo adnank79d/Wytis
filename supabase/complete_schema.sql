@@ -570,6 +570,39 @@ CREATE POLICY "Users can manage inventory movements of their business"
   );
 
 --------------------------------------------------------------------------------
+-- 12B. PAYMENTS TABLE
+--------------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS public.payments (
+  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
+  business_id uuid NOT NULL REFERENCES public.businesses(id) ON DELETE CASCADE,
+  payment_type text NOT NULL CHECK (payment_type IN ('received', 'made')),
+  amount numeric NOT NULL DEFAULT 0,
+  payment_date date NOT NULL DEFAULT CURRENT_DATE,
+  payment_method text NOT NULL DEFAULT 'cash' CHECK (payment_method IN ('cash', 'bank', 'upi', 'card', 'cheque', 'other')),
+  reference_number text,
+  invoice_id uuid REFERENCES public.invoices(id) ON DELETE SET NULL,
+  party_name text NOT NULL,
+  notes text,
+  status text NOT NULL DEFAULT 'completed' CHECK (status IN ('pending', 'completed', 'failed', 'cancelled')),
+  created_at timestamptz DEFAULT now(),
+  updated_at timestamptz DEFAULT now()
+);
+
+ALTER TABLE public.payments ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Users can manage payments of their business" ON public.payments;
+CREATE POLICY "Users can manage payments of their business"
+  ON public.payments
+  FOR ALL
+  USING (
+    EXISTS (
+      SELECT 1 FROM public.memberships
+      WHERE memberships.business_id = payments.business_id
+      AND memberships.user_id = auth.uid()
+    )
+  );
+
+--------------------------------------------------------------------------------
 -- 13. INDEXES
 --------------------------------------------------------------------------------
 CREATE INDEX IF NOT EXISTS idx_memberships_user_id ON public.memberships(user_id);
@@ -589,6 +622,10 @@ CREATE INDEX IF NOT EXISTS idx_inventory_products_category ON public.inventory_p
 CREATE INDEX IF NOT EXISTS idx_inventory_products_sku ON public.inventory_products(sku);
 CREATE INDEX IF NOT EXISTS idx_inventory_movements_product ON public.inventory_movements(product_id);
 CREATE INDEX IF NOT EXISTS idx_inventory_categories_business ON public.inventory_categories(business_id);
+CREATE INDEX IF NOT EXISTS idx_payments_business_id ON public.payments(business_id);
+CREATE INDEX IF NOT EXISTS idx_payments_invoice_id ON public.payments(invoice_id);
+CREATE INDEX IF NOT EXISTS idx_payments_date ON public.payments(payment_date);
+
 
 --------------------------------------------------------------------------------
 -- 14. FINANCIAL VIEWS
