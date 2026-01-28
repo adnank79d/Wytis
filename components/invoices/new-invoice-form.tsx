@@ -55,7 +55,7 @@ const formSchema = z.object({
         description: z.string().min(1, "Description is required"),
         quantity: z.number().min(0.01, "Qty > 0"),
         unit_price: z.number().min(0, "Price >= 0"),
-        cost_price: z.coerce.number().min(0),
+        cost_price: z.number().min(0),
         gst_rate: z.number().min(0, "GST >= 0"),
     })).min(1, "At least one item is required"),
 });
