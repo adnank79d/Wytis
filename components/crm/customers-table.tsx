@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import { CustomerSheet } from "./customer-sheet";
 import type { Customer } from "@/lib/actions/crm";
+import { cn } from "@/lib/utils";
 
 interface CustomersTableProps {
     customers: Customer[];
@@ -69,14 +70,14 @@ export function CustomersTable({ customers }: CustomersTableProps) {
     return (
         <div className="space-y-4">
             {/* Toolbar */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-between">
+            <div className="flex flex-col sm:flex-row gap-4 justify-between px-6 pt-6 pb-2">
                 <div className="relative w-full max-w-sm">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
-                        placeholder="Search customers..."
+                        placeholder="Search by name, email, or company..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="pl-9"
+                        className="pl-9 bg-muted/10 border-muted"
                     />
                 </div>
 
@@ -84,10 +85,13 @@ export function CustomersTable({ customers }: CustomersTableProps) {
                     {['All', 'lead', 'prospect', 'customer'].map(status => (
                         <Button
                             key={status}
-                            variant={statusFilter === status ? "default" : "outline"}
+                            variant={statusFilter === status ? "secondary" : "ghost"}
                             size="sm"
                             onClick={() => setStatusFilter(status)}
-                            className="capitalize rounded-full text-xs"
+                            className={cn(
+                                "capitalize rounded-full text-xs font-medium px-3",
+                                statusFilter === status && "bg-primary/10 text-primary hover:bg-primary/20"
+                            )}
                         >
                             {status}
                         </Button>
@@ -96,7 +100,7 @@ export function CustomersTable({ customers }: CustomersTableProps) {
             </div>
 
             {/* Table */}
-            <div className="rounded-md border bg-card">
+            <div>
                 <Table>
                     <TableHeader>
                         <TableRow>

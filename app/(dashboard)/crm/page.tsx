@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import { Card } from "@/components/ui/card";
-import { Users, Target, CheckCircle } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Users, Target, CheckCircle, TrendingUp, Filter } from "lucide-react";
 
 import { getCustomers } from "@/lib/actions/crm";
 import { CustomersTable } from "@/components/crm/customers-table";
@@ -23,51 +23,84 @@ export default async function CRMPage() {
     const prospectsCount = customers.filter(c => c.status === 'prospect').length;
     const customersCount = customers.filter(c => c.status === 'customer').length;
 
+    // Calculate a simple "conversion rate" dummy metric (Customers / Total * 100)
+    const total = leadsCount + prospectsCount + customersCount;
+    const conversionRate = total > 0 ? Math.round((customersCount / total) * 100) : 0;
+
     return (
-        <div className="max-w-7xl mx-auto py-8 px-4 space-y-6">
+        <div className="max-w-7xl mx-auto py-8 px-4 space-y-8">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight">CRM</h1>
-                    <p className="text-muted-foreground mt-1">Manage leads, customers, and interactions.</p>
+                    <h1 className="text-4xl font-extrabold tracking-tight text-foreground">CRM Overview</h1>
+                    <p className="text-muted-foreground mt-2 text-lg">Manage your sales pipeline and client relationships.</p>
                 </div>
                 <AddCustomerDialog />
             </div>
 
             {/* Pipeline Stats */}
-            {/* Pipeline Stats */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <Card className="p-4 flex flex-row items-center justify-between bg-blue-50/50 border-blue-200">
-                    <div className="flex items-center gap-4">
-                        <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
-                            <Target className="h-6 w-6 text-blue-600" />
-                        </div>
-                        <p className="text-sm font-medium text-blue-900/80">Leads</p>
-                    </div>
-                    <p className="text-3xl font-bold text-blue-900">{leadsCount}</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <Card className="shadow-sm hover:shadow-md transition-shadow">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">Active Leads</CardTitle>
+                        <Target className="h-4 w-4 text-blue-600" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">{leadsCount}</div>
+                        <p className="text-xs text-muted-foreground mt-1">Potential opportunities</p>
+                    </CardContent>
                 </Card>
-                <Card className="p-4 flex flex-row items-center justify-between bg-purple-50/50 border-purple-200">
-                    <div className="flex items-center gap-4">
-                        <div className="h-12 w-12 rounded-full bg-purple-100 flex items-center justify-center shrink-0">
-                            <Users className="h-6 w-6 text-purple-600" />
-                        </div>
-                        <p className="text-sm font-medium text-purple-900/80">Prospects</p>
-                    </div>
-                    <p className="text-3xl font-bold text-purple-900">{prospectsCount}</p>
+                <Card className="shadow-sm hover:shadow-md transition-shadow">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">In Negotiation</CardTitle>
+                        <Users className="h-4 w-4 text-purple-600" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">{prospectsCount}</div>
+                        <p className="text-xs text-muted-foreground mt-1">Proposal stage</p>
+                    </CardContent>
                 </Card>
-                <Card className="p-4 flex flex-row items-center justify-between bg-emerald-50/50 border-emerald-200">
-                    <div className="flex items-center gap-4">
-                        <div className="h-12 w-12 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
-                            <CheckCircle className="h-6 w-6 text-emerald-600" />
-                        </div>
-                        <p className="text-sm font-medium text-emerald-900/80">Customers</p>
-                    </div>
-                    <p className="text-3xl font-bold text-emerald-900">{customersCount}</p>
+                <Card className="shadow-sm hover:shadow-md transition-shadow">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">Customers</CardTitle>
+                        <CheckCircle className="h-4 w-4 text-emerald-600" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">{customersCount}</div>
+                        <p className="text-xs text-muted-foreground mt-1">Closed won deals</p>
+                    </CardContent>
+                </Card>
+                <Card className="shadow-sm hover:shadow-md transition-shadow bg-muted/20">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">Conversion Rate</CardTitle>
+                        <TrendingUp className="h-4 w-4 text-amber-600" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">{conversionRate}%</div>
+                        <p className="text-xs text-muted-foreground mt-1">Lead to Customer</p>
+                    </CardContent>
                 </Card>
             </div>
 
             {/* Main Content */}
-            <CustomersTable customers={customers} />
+            <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                    <h2 className="text-xl font-semibold tracking-tight">Customer Database</h2>
+                    <div className="flex items-center gap-2">
+                        {/* <Button variant="outline" size="sm" className="hidden sm:flex">
+                            <Filter className="mr-2 h-4 w-4" /> Filter
+                        </Button> 
+                        Placeholder for future filters
+                        */}
+                    </div>
+                </div>
+
+                <Card className="border-0 shadow-sm">
+                    <CardContent className="p-0">
+                        <CustomersTable customers={customers} />
+                    </CardContent>
+                </Card>
+            </div>
         </div>
     );
 }
