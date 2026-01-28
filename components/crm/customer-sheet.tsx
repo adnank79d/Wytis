@@ -68,125 +68,129 @@ export function CustomerSheet({ customer, open, onOpenChange }: CustomerSheetPro
 
     return (
         <Sheet open={open} onOpenChange={onOpenChange}>
-            <SheetContent className="w-[400px] sm:w-[540px] overflow-y-auto">
-                <SheetHeader className="mb-6">
-                    <SheetTitle>Customer Details</SheetTitle>
-                    <SheetDescription>View and manage client information and history.</SheetDescription>
-                </SheetHeader>
+            <SheetContent className="w-full sm:max-w-[800px] overflow-y-auto sm:border-l p-0 gap-0">
+                <div className="p-6 border-b bg-muted/10 sticky top-0 z-10 backdrop-blur-sm">
+                    <SheetHeader>
+                        <SheetTitle className="text-xl">Customer Details</SheetTitle>
+                        <SheetDescription>View and manage client information and history.</SheetDescription>
+                    </SheetHeader>
+                </div>
 
-                <Tabs defaultValue="details">
-                    <TabsList className="grid w-full grid-cols-2">
-                        <TabsTrigger value="details">Profile</TabsTrigger>
-                        <TabsTrigger value="history">Activity Log</TabsTrigger>
-                    </TabsList>
+                <div className="p-6">
+                    <Tabs defaultValue="details">
+                        <TabsList className="grid w-full grid-cols-2 mb-6">
+                            <TabsTrigger value="details">Profile</TabsTrigger>
+                            <TabsTrigger value="history">Activity Log</TabsTrigger>
+                        </TabsList>
 
-                    {/* DETAILS TAB (EDIT FORM) */}
-                    <TabsContent value="details">
-                        <form key={customer.id} action={handleUpdate} className="grid gap-4 py-4">
-                            <div className="grid grid-cols-2 gap-4">
+                        {/* DETAILS TAB (EDIT FORM) */}
+                        <TabsContent value="details">
+                            <form key={customer.id} action={handleUpdate} className="grid gap-4 py-4">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="name">Contact Name</Label>
+                                        <Input id="name" name="name" defaultValue={customer.name} required />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="company_name">Company Name</Label>
+                                        <Input id="company_name" name="company_name" defaultValue={customer.company_name || ''} />
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="status">Status</Label>
+                                        <Select name="status" defaultValue={customer.status}>
+                                            <SelectTrigger>
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="lead">Lead</SelectItem>
+                                                <SelectItem value="prospect">Prospect</SelectItem>
+                                                <SelectItem value="customer">Customer</SelectItem>
+                                                <SelectItem value="inactive">Inactive</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="tags">Tags (comma separated)</Label>
+                                        <Input id="tags" name="tags" defaultValue={customer.tags ? customer.tags.join(', ') : ''} />
+                                    </div>
+                                </div>
+
+                                <Separator />
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="email">Email</Label>
+                                        <Input id="email" name="email" type="email" defaultValue={customer.email || ''} />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="phone">Phone</Label>
+                                        <Input id="phone" name="phone" defaultValue={customer.phone || ''} />
+                                    </div>
+                                </div>
+
                                 <div className="space-y-2">
-                                    <Label htmlFor="name">Contact Name</Label>
-                                    <Input id="name" name="name" defaultValue={customer.name} required />
+                                    <Label htmlFor="address">Address</Label>
+                                    <Textarea id="address" name="address" defaultValue={customer.address || ''} rows={2} />
                                 </div>
+
                                 <div className="space-y-2">
-                                    <Label htmlFor="company_name">Company Name</Label>
-                                    <Input id="company_name" name="company_name" defaultValue={customer.company_name || ''} />
+                                    <Label htmlFor="gst_number">GSTIN</Label>
+                                    <Input id="gst_number" name="gst_number" defaultValue={customer.gst_number || ''} />
                                 </div>
-                            </div>
 
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="status">Status</Label>
-                                    <Select name="status" defaultValue={customer.status}>
-                                        <SelectTrigger>
-                                            <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="lead">Lead</SelectItem>
-                                            <SelectItem value="prospect">Prospect</SelectItem>
-                                            <SelectItem value="customer">Customer</SelectItem>
-                                            <SelectItem value="inactive">Inactive</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="tags">Tags (comma separated)</Label>
-                                    <Input id="tags" name="tags" defaultValue={customer.tags ? customer.tags.join(', ') : ''} />
-                                </div>
-                            </div>
-
-                            <Separator />
-
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="email">Email</Label>
-                                    <Input id="email" name="email" type="email" defaultValue={customer.email || ''} />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="phone">Phone</Label>
-                                    <Input id="phone" name="phone" defaultValue={customer.phone || ''} />
-                                </div>
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label htmlFor="address">Address</Label>
-                                <Textarea id="address" name="address" defaultValue={customer.address || ''} rows={2} />
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label htmlFor="gst_number">GSTIN</Label>
-                                <Input id="gst_number" name="gst_number" defaultValue={customer.gst_number || ''} />
-                            </div>
-
-                            <SheetFooter className="mt-4">
-                                <Button type="submit">Save Changes</Button>
-                            </SheetFooter>
-                        </form>
-                    </TabsContent>
-
-                    {/* HISTORY TAB */}
-                    <TabsContent value="history" className="space-y-4">
-                        <div className="bg-muted/30 p-4 rounded-lg border  space-y-3">
-                            <h4 className="text-sm font-medium flex items-center gap-2">
-                                <PlusCircle className="h-4 w-4" /> Log New Activity
-                            </h4>
-                            <form action={handleAddInteraction} className="space-y-3">
-                                <div className="flex gap-2">
-                                    <Select name="type" defaultValue="call">
-                                        <SelectTrigger className="w-[120px]">
-                                            <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="call">Call</SelectItem>
-                                            <SelectItem value="email">Email</SelectItem>
-                                            <SelectItem value="meeting">Meeting</SelectItem>
-                                            <SelectItem value="note">Note</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                    <Input type="date" name="date" defaultValue={new Date().toISOString().split('T')[0]} />
-                                </div>
-                                <Textarea name="details" placeholder="What happened?" required rows={2} />
-                                <Button type="submit" size="sm" variant="secondary" className="w-full">Save Log</Button>
+                                <SheetFooter className="mt-4">
+                                    <Button type="submit">Save Changes</Button>
+                                </SheetFooter>
                             </form>
-                        </div>
+                        </TabsContent>
 
-                        <div className="space-y-4 pt-2">
-                            {/* We just show a placeholder here that data will appear after refresh/load. 
+                        {/* HISTORY TAB */}
+                        <TabsContent value="history" className="space-y-4">
+                            <div className="bg-muted/30 p-4 rounded-lg border  space-y-3">
+                                <h4 className="text-sm font-medium flex items-center gap-2">
+                                    <PlusCircle className="h-4 w-4" /> Log New Activity
+                                </h4>
+                                <form action={handleAddInteraction} className="space-y-3">
+                                    <div className="flex gap-2">
+                                        <Select name="type" defaultValue="call">
+                                            <SelectTrigger className="w-[120px]">
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="call">Call</SelectItem>
+                                                <SelectItem value="email">Email</SelectItem>
+                                                <SelectItem value="meeting">Meeting</SelectItem>
+                                                <SelectItem value="note">Note</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                        <Input type="date" name="date" defaultValue={new Date().toISOString().split('T')[0]} />
+                                    </div>
+                                    <Textarea name="details" placeholder="What happened?" required rows={2} />
+                                    <Button type="submit" size="sm" variant="secondary" className="w-full">Save Log</Button>
+                                </form>
+                            </div>
+
+                            <div className="space-y-4 pt-2">
+                                {/* We just show a placeholder here that data will appear after refresh/load. 
                                 In a real fully-dynamic component, we'd pass interactions as prop. */}
-                            <p className="text-xs text-center text-muted-foreground">
-                                (Interaction logs will appear here. To view history, refresh the page or implement interactive fetch.)
-                            </p>
-                            {/* Visual Placeholder for what it looks like */}
-                            <div className="flex flex-col gap-4 relative pl-4 border-l-2 border-muted">
-                                <div className="relative">
-                                    <div className="absolute -left-[21px] top-1 h-3 w-3 rounded-full bg-primary" />
-                                    <p className="text-xs text-muted-foreground">{format(new Date(), 'MMM dd, yyyy')}</p>
-                                    <p className="font-medium text-sm">Created Profile</p>
+                                <p className="text-xs text-center text-muted-foreground">
+                                    (Interaction logs will appear here. To view history, refresh the page or implement interactive fetch.)
+                                </p>
+                                {/* Visual Placeholder for what it looks like */}
+                                <div className="flex flex-col gap-4 relative pl-4 border-l-2 border-muted">
+                                    <div className="relative">
+                                        <div className="absolute -left-[21px] top-1 h-3 w-3 rounded-full bg-primary" />
+                                        <p className="text-xs text-muted-foreground">{format(new Date(), 'MMM dd, yyyy')}</p>
+                                        <p className="font-medium text-sm">Created Profile</p>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </TabsContent>
-                </Tabs>
+                        </TabsContent>
+                    </Tabs>
+                </div>
             </SheetContent>
         </Sheet>
     );
