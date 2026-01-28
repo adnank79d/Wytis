@@ -39,13 +39,13 @@ export type Interaction = {
 
 const CustomerSchema = z.object({
     name: z.string().min(1, "Name is required"),
-    email: z.string().email().optional().or(z.literal('')),
-    phone: z.string().optional(),
-    company_name: z.string().optional(),
-    address: z.string().optional(),
-    gst_number: z.string().optional(),
+    email: z.string().email().optional().or(z.literal('')).or(z.null()),
+    phone: z.string().optional().or(z.literal('')).or(z.null()),
+    company_name: z.string().optional().or(z.literal('')).or(z.null()),
+    address: z.string().optional().or(z.literal('')).or(z.null()),
+    gst_number: z.string().optional().or(z.literal('')).or(z.null()),
     status: z.enum(['lead', 'prospect', 'customer', 'inactive']).default('lead'),
-    tags: z.string().optional(), // Comma separated for input
+    tags: z.string().optional().or(z.literal('')).or(z.null()), // Comma separated for input
 });
 
 export type CustomerFormState = {
