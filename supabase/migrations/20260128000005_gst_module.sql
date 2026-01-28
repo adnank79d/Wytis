@@ -5,6 +5,10 @@ ADD COLUMN IF NOT EXISTS hsn_code text,
 ADD COLUMN IF NOT EXISTS supplier_gstin text,
 ADD COLUMN IF NOT EXISTS taxable_value numeric GENERATED ALWAYS AS (amount - gst_amount) STORED;
 
+-- Ensure customers table has gst_number (fixing migration dependency)
+ALTER TABLE public.customers
+ADD COLUMN IF NOT EXISTS gst_number text;
+
 -- Index for analytics
 CREATE INDEX IF NOT EXISTS idx_expenses_gst_amount ON public.expenses(gst_amount);
 
