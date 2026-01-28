@@ -1,8 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useFormStatus } from "react-dom";
 import {
     Sheet,
     SheetContent,
@@ -23,24 +22,16 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { Phone, Mail, MapPin, Building, Calendar, PlusCircle, MessageSquare } from "lucide-react";
+import { Phone, Mail, MessageSquare, Calendar, PlusCircle, Clock } from "lucide-react";
 import { format } from "date-fns";
 import { updateCustomer, addInteraction, getInteractions, type Customer, type Interaction } from "@/lib/actions/crm";
+import { cn } from "@/lib/utils";
 
 interface CustomerSheetProps {
     customer: Customer | null;
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    initialInteractions?: Interaction[];
-}
-
-function InteractionList({ customerId }: { customerId: string }) {
-    // In a real app we might fetch this client side or pass as prop. 
-    // For simplicity, we'll assume the parent component *might* pass it or we fetch it. 
-    // Given the constraints, let's just make a small form component here.
-    return null;
 }
 
 export function CustomerSheet({ customer, open, onOpenChange }: CustomerSheetProps) {
@@ -48,9 +39,19 @@ export function CustomerSheet({ customer, open, onOpenChange }: CustomerSheetPro
     const [interactions, setInteractions] = useState<Interaction[]>([]);
     const [loadingInteractions, setLoadingInteractions] = useState(false);
 
-    // Fetch interactions when sheet opens
-    // Using a simpler effect or just revalidating
-    // Let's rely on server revalidation for simplicity in this artifact
+    // Fetch interactions when sheet opens or customer changes
+    useEffect(() => {
+        if (open && customer?.id) {
+            setLoadingInteractions(true);
+            getInteractions(customer.id)
+                .then(data => {
+                    setInteractions(data);
+                })
+                .finally(() => {
+                    setLoadingInteractions(false);
+                });
+        }
+    }, [open, customer?.id]);
 
     if (!customer) return null;
 
@@ -62,9 +63,31 @@ export function CustomerSheet({ customer, open, onOpenChange }: CustomerSheetPro
 
     async function handleAddInteraction(formData: FormData) {
         await addInteraction(customer!.id, formData);
+
+        // Refresh interactions list eagerly
+        const newData = await getInteractions(customer!.id);
+        setInteractions(newData);
+
+        // Refresh parent to update 'last contacted' in table
         router.refresh();
-        // Ideally we'd re-fetch interactions locally to show them optimistically
+
+        // Clear form? standard form action doesn't auto-clear controlled inputs easily without reset
+        // but natively it might clear if we didn't prevent default. 
+        // For now, let's assume user might want to add another or close.
+        // To be perfect, we'd ref the form and reset it, but simplistic is fine.
+        const form = document.getElementById("interaction-form") as HTMLFormElement;
+        if (form) form.reset();
     }
+
+    const getTypeIcon = (type: string) => {
+        switch (type) {
+            case 'call': return Phone;
+            case 'email': return Mail;
+            case 'meeting': return Calendar;
+            case 'note': return MessageSquare;
+            default: return MessageSquare;
+        }
+    };
 
     return (
         <Sheet open={open} onOpenChange={onOpenChange}>
@@ -148,15 +171,16 @@ export function CustomerSheet({ customer, open, onOpenChange }: CustomerSheetPro
                         </TabsContent>
 
                         {/* HISTORY TAB */}
-                        <TabsContent value="history" className="space-y-4">
-                            <div className="bg-muted/30 p-4 rounded-lg border  space-y-3">
+                        <TabsContent value="history" className="space-y-6">
+                            {/* Add Interaction Form */}
+                            <div className="bg-muted/30 p-4 rounded-lg border space-y-3">
                                 <h4 className="text-sm font-medium flex items-center gap-2">
                                     <PlusCircle className="h-4 w-4" /> Log New Activity
                                 </h4>
-                                <form action={handleAddInteraction} className="space-y-3">
+                                <form id="interaction-form" action={handleAddInteraction} className="space-y-3">
                                     <div className="flex gap-2">
                                         <Select name="type" defaultValue="call">
-                                            <SelectTrigger className="w-[120px]">
+                                            <SelectTrigger className="w-[140px]">
                                                 <SelectValue />
                                             </SelectTrigger>
                                             <SelectContent>
@@ -166,27 +190,44 @@ export function CustomerSheet({ customer, open, onOpenChange }: CustomerSheetPro
                                                 <SelectItem value="note">Note</SelectItem>
                                             </SelectContent>
                                         </Select>
-                                        <Input type="date" name="date" defaultValue={new Date().toISOString().split('T')[0]} />
+                                        <Input type="date" name="date" defaultValue={new Date().toISOString().split('T')[0]} className="flex-1" />
                                     </div>
                                     <Textarea name="details" placeholder="What happened?" required rows={2} />
                                     <Button type="submit" size="sm" variant="secondary" className="w-full">Save Log</Button>
                                 </form>
                             </div>
 
-                            <div className="space-y-4 pt-2">
-                                {/* We just show a placeholder here that data will appear after refresh/load. 
-                                In a real fully-dynamic component, we'd pass interactions as prop. */}
-                                <p className="text-xs text-center text-muted-foreground">
-                                    (Interaction logs will appear here. To view history, refresh the page or implement interactive fetch.)
-                                </p>
-                                {/* Visual Placeholder for what it looks like */}
-                                <div className="flex flex-col gap-4 relative pl-4 border-l-2 border-muted">
-                                    <div className="relative">
-                                        <div className="absolute -left-[21px] top-1 h-3 w-3 rounded-full bg-primary" />
-                                        <p className="text-xs text-muted-foreground">{format(new Date(), 'MMM dd, yyyy')}</p>
-                                        <p className="font-medium text-sm">Created Profile</p>
-                                    </div>
-                                </div>
+                            {/* Timeline */}
+                            <div className="space-y-0 relative pl-4 border-l-2 border-muted/50 ml-2">
+                                {loadingInteractions ? (
+                                    <div className="py-8 text-center text-sm text-muted-foreground">Loading history...</div>
+                                ) : interactions.length === 0 ? (
+                                    <div className="py-8 text-center text-sm text-muted-foreground">No interactions logged yet.</div>
+                                ) : (
+                                    interactions.map((interaction) => {
+                                        const Icon = getTypeIcon(interaction.type);
+                                        return (
+                                            <div key={interaction.id} className="relative pb-6 pl-6 last:pb-0">
+                                                <div className={cn(
+                                                    "absolute -left-[25px] top-0 h-8 w-8 rounded-full border-4 border-background flex items-center justify-center shadow-sm",
+                                                    "bg-muted text-muted-foreground"
+                                                )}>
+                                                    <Icon className="h-3.5 w-3.5" />
+                                                </div>
+                                                <div className="flex flex-col gap-1">
+                                                    <div className="flex items-baseline justify-between">
+                                                        <span className="text-sm font-semibold capitalize">{interaction.type}</span>
+                                                        <span className="text-xs text-muted-foreground flex items-center gap-1">
+                                                            <Clock className="h-3 w-3" />
+                                                            {format(new Date(interaction.interaction_date), 'MMM dd, yyyy')}
+                                                        </span>
+                                                    </div>
+                                                    <p className="text-sm text-foreground/80 whitespace-pre-wrap">{interaction.details}</p>
+                                                </div>
+                                            </div>
+                                        );
+                                    })
+                                )}
                             </div>
                         </TabsContent>
                     </Tabs>
