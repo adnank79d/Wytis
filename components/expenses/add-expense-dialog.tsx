@@ -23,7 +23,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { Plus } from "lucide-react";
+import { Plus, Percent } from "lucide-react";
 import { addExpense, type ExpenseFormState } from "@/lib/actions/expenses";
 
 const CATEGORIES = ['Rent', 'Utilities', 'Salaries', 'Supplies', 'Marketing', 'Software', 'Travel', 'Other'];
@@ -49,7 +49,6 @@ export function AddExpenseDialog() {
 
         if (result.success) {
             setOpen(false);
-            // Reset form or state if needed, but Dialog unmounts content usually or we can reset specifically if not
             router.refresh();
         }
     }
@@ -76,7 +75,7 @@ export function AddExpenseDialog() {
 
                     <div className="grid grid-cols-2 gap-4">
                         <div className="grid gap-2">
-                            <Label htmlFor="amount">Amount</Label>
+                            <Label htmlFor="amount">Total Amount (₹)</Label>
                             <Input id="amount" name="amount" type="number" step="0.01" placeholder="0.00" required />
                         </div>
                         <div className="grid gap-2">
@@ -111,6 +110,24 @@ export function AddExpenseDialog() {
                                     ))}
                                 </SelectContent>
                             </Select>
+                        </div>
+                    </div>
+
+                    {/* GST Section */}
+                    <div className="p-3 bg-muted/30 rounded-lg border space-y-3">
+                        <div className="flex items-center gap-2">
+                            <Percent className="h-4 w-4 text-muted-foreground" />
+                            <span className="text-sm font-medium">GST Details (Optional)</span>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="grid gap-2">
+                                <Label htmlFor="gst_amount" className="text-xs">GST Amount Included</Label>
+                                <Input id="gst_amount" name="gst_amount" type="number" step="0.01" placeholder="0" />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="supplier_gstin" className="text-xs">Supplier GSTIN</Label>
+                                <Input id="supplier_gstin" name="supplier_gstin" placeholder="e.g. 29ABC..." />
+                            </div>
                         </div>
                     </div>
 

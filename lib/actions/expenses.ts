@@ -19,6 +19,8 @@ export type Expense = {
     payment_method: string;
     receipt_url: string | null;
     notes: string | null;
+    gst_amount: number;
+    supplier_gstin: string | null;
     created_at: string;
 };
 
@@ -40,6 +42,8 @@ const ExpenseSchema = z.object({
     category: z.string().min(1, "Category is required"),
     payment_method: z.string().min(1, "Payment Method is required"),
     notes: z.string().optional(),
+    gst_amount: z.coerce.number().default(0),
+    supplier_gstin: z.string().optional(),
 });
 
 export type ExpenseFormState = {
@@ -82,6 +86,8 @@ export async function addExpense(prevState: ExpenseFormState, formData: FormData
         category: formData.get('category'),
         payment_method: formData.get('payment_method'),
         notes: formData.get('notes'),
+        gst_amount: formData.get('gst_amount'),
+        supplier_gstin: formData.get('supplier_gstin'),
     });
 
     if (!validatedFields.success) {
@@ -97,6 +103,10 @@ export async function addExpense(prevState: ExpenseFormState, formData: FormData
     // Convert date to string YYYY-MM-DD
     const expenseDate = data.expense_date.toISOString().split('T')[0];
 
+    // Note: Trigger will utilize 'amount' and handle ledger entries.
+    // If tracking GST separately in ledger is needed, we would update trigger.
+    // For now, we assume simple expense debit.
+
     const { error } = await supabase
         .from('expenses')
         .insert({
@@ -107,6 +117,8 @@ export async function addExpense(prevState: ExpenseFormState, formData: FormData
             category: data.category,
             payment_method: data.payment_method,
             notes: data.notes || null,
+            gst_amount: data.gst_amount,
+            supplier_gstin: data.supplier_gstin || null,
         });
 
     if (error) {
@@ -116,6 +128,7 @@ export async function addExpense(prevState: ExpenseFormState, formData: FormData
     revalidatePath('/expenses');
     revalidatePath('/dashboard');
     revalidatePath('/reports');
+    revalidatePath('/gst');
 
     return { message: "Expense added successfully", success: true };
 }
@@ -139,6 +152,7 @@ export async function deleteExpense(id: string) {
     revalidatePath('/expenses');
     revalidatePath('/dashboard');
     revalidatePath('/reports');
+    revalidatePath('/gst');
 
     return { success: true };
 }
