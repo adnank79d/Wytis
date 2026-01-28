@@ -82,7 +82,7 @@ export function CustomerSheet({ customer, open, onOpenChange }: CustomerSheetPro
 
                     {/* DETAILS TAB (EDIT FORM) */}
                     <TabsContent value="details">
-                        <form action={handleUpdate} className="grid gap-4 py-4">
+                        <form key={customer.id} action={handleUpdate} className="grid gap-4 py-4">
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <Label htmlFor="name">Contact Name</Label>
