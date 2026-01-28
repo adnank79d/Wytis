@@ -37,32 +37,32 @@ export default async function CRMPage() {
             {/* Pipeline Stats */}
             {/* Pipeline Stats */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <Card className="p-4 flex flex-row items-center gap-4 bg-blue-50/50 border-blue-200">
-                    <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
-                        <Target className="h-6 w-6 text-blue-600" />
+                <Card className="p-4 flex flex-row items-center justify-between bg-blue-50/50 border-blue-200">
+                    <div className="flex items-center gap-4">
+                        <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
+                            <Target className="h-6 w-6 text-blue-600" />
+                        </div>
+                        <p className="text-sm font-medium text-blue-900/80">Leads</p>
                     </div>
-                    <div>
-                        <p className="text-sm font-medium text-muted-foreground">Leads</p>
-                        <p className="text-2xl font-bold text-blue-900 m-0 leading-none">{leadsCount}</p>
-                    </div>
+                    <p className="text-3xl font-bold text-blue-900">{leadsCount}</p>
                 </Card>
-                <Card className="p-4 flex flex-row items-center gap-4 bg-purple-50/50 border-purple-200">
-                    <div className="h-12 w-12 rounded-full bg-purple-100 flex items-center justify-center shrink-0">
-                        <Users className="h-6 w-6 text-purple-600" />
+                <Card className="p-4 flex flex-row items-center justify-between bg-purple-50/50 border-purple-200">
+                    <div className="flex items-center gap-4">
+                        <div className="h-12 w-12 rounded-full bg-purple-100 flex items-center justify-center shrink-0">
+                            <Users className="h-6 w-6 text-purple-600" />
+                        </div>
+                        <p className="text-sm font-medium text-purple-900/80">Prospects</p>
                     </div>
-                    <div>
-                        <p className="text-sm font-medium text-muted-foreground">Prospects</p>
-                        <p className="text-2xl font-bold text-purple-900 m-0 leading-none">{prospectsCount}</p>
-                    </div>
+                    <p className="text-3xl font-bold text-purple-900">{prospectsCount}</p>
                 </Card>
-                <Card className="p-4 flex flex-row items-center gap-4 bg-emerald-50/50 border-emerald-200">
-                    <div className="h-12 w-12 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
-                        <CheckCircle className="h-6 w-6 text-emerald-600" />
+                <Card className="p-4 flex flex-row items-center justify-between bg-emerald-50/50 border-emerald-200">
+                    <div className="flex items-center gap-4">
+                        <div className="h-12 w-12 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
+                            <CheckCircle className="h-6 w-6 text-emerald-600" />
+                        </div>
+                        <p className="text-sm font-medium text-emerald-900/80">Customers</p>
                     </div>
-                    <div>
-                        <p className="text-sm font-medium text-muted-foreground">Customers</p>
-                        <p className="text-2xl font-bold text-emerald-900 m-0 leading-none">{customersCount}</p>
-                    </div>
+                    <p className="text-3xl font-bold text-emerald-900">{customersCount}</p>
                 </Card>
             </div>
 
