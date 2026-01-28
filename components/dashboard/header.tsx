@@ -116,7 +116,7 @@ export function Header({ userRole, businessName, userEmail, userName }: HeaderPr
                         onClick={() => setIsMenuOpen(!isMenuOpen)}
                     >
                         <Avatar className="h-7 w-7 md:h-8 md:w-8 border">
-                            <AvatarImage src="/placeholder-user.jpg" alt="@user" />
+                            <AvatarImage src="" alt="@user" />
                             <AvatarFallback className="bg-primary/5 text-[10px] md:text-xs text-primary font-bold">{userInitials}</AvatarFallback>
                         </Avatar>
                     </Button>

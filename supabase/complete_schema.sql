@@ -138,14 +138,21 @@ CREATE POLICY "Authenticated users can create memberships"
 CREATE TABLE IF NOT EXISTS public.invoices (
   id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
   business_id uuid NOT NULL REFERENCES public.businesses(id) ON DELETE CASCADE,
+  customer_id uuid REFERENCES public.customers(id) ON DELETE SET NULL,
   invoice_number text NOT NULL,
   customer_name text NOT NULL,
   invoice_date date NOT NULL,
+  due_date date,
   subtotal numeric NOT NULL DEFAULT 0,
   gst_amount numeric NOT NULL DEFAULT 0,
   total_amount numeric NOT NULL DEFAULT 0,
-  status text NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'issued', 'paid')),
-  created_at timestamptz DEFAULT now()
+  status text NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'issued', 'paid', 'voided')),
+  notes text,
+  paid_at timestamptz,
+  voided_at timestamptz,
+  void_reason text,
+  created_at timestamptz DEFAULT now(),
+  updated_at timestamptz DEFAULT now()
 );
 
 ALTER TABLE public.invoices ENABLE ROW LEVEL SECURITY;
@@ -168,9 +175,11 @@ CREATE POLICY "Users can manage invoices of their business"
 CREATE TABLE IF NOT EXISTS public.invoice_items (
   id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
   invoice_id uuid NOT NULL REFERENCES public.invoices(id) ON DELETE CASCADE,
+  product_id uuid REFERENCES public.inventory_products(id) ON DELETE SET NULL,
   description text NOT NULL,
   quantity numeric NOT NULL DEFAULT 0,
   unit_price numeric NOT NULL DEFAULT 0,
+  cost_price numeric DEFAULT 0,
   gst_rate numeric NOT NULL DEFAULT 0,
   line_total numeric NOT NULL DEFAULT 0
 );
@@ -885,7 +894,7 @@ BEGIN
 END;
 $$;
 
--- Invoice issued automation
+-- Invoice issued automation (with COGS tracking)
 CREATE OR REPLACE FUNCTION public.handle_invoice_issued()
 RETURNS TRIGGER
 LANGUAGE plpgsql
@@ -894,10 +903,13 @@ AS $$
 DECLARE
   trx_id uuid;
   period text;
+  total_cogs numeric := 0;
+  item_record RECORD;
 BEGIN
   IF (TG_OP = 'UPDATE' AND OLD.status != 'issued' AND NEW.status = 'issued') OR
      (TG_OP = 'INSERT' AND NEW.status = 'issued') THEN
      
+     -- Create main transaction
      INSERT INTO public.transactions (
        business_id, source_type, source_id, amount, transaction_type, transaction_date
      )
@@ -906,17 +918,49 @@ BEGIN
      )
      RETURNING id INTO trx_id;
 
+     -- Entry 1: Debit Accounts Receivable (Customer owes money)
      INSERT INTO public.ledger_entries (business_id, transaction_id, account_name, debit, credit)
      VALUES (NEW.business_id, trx_id, 'Accounts Receivable', NEW.total_amount, 0);
      
+     -- Entry 2: Credit Sales (Revenue earned)
      INSERT INTO public.ledger_entries (business_id, transaction_id, account_name, debit, credit)
      VALUES (NEW.business_id, trx_id, 'Sales', 0, NEW.subtotal);
      
+     -- Entry 3: Credit GST Payable (Tax liability)
      IF NEW.gst_amount > 0 THEN
         INSERT INTO public.ledger_entries (business_id, transaction_id, account_name, debit, credit)
         VALUES (NEW.business_id, trx_id, 'GST Payable', 0, NEW.gst_amount);
      END IF;
 
+     -- Entry 4: Calculate and Record COGS from invoice items
+     -- COGS = Sum of (cost_price * quantity) for all items
+     SELECT COALESCE(SUM(cost_price * quantity), 0) INTO total_cogs
+     FROM public.invoice_items
+     WHERE invoice_id = NEW.id AND cost_price > 0;
+     
+     IF total_cogs > 0 THEN
+        -- Debit Cost of Goods Sold (Expense increases)
+        INSERT INTO public.ledger_entries (business_id, transaction_id, account_name, debit, credit)
+        VALUES (NEW.business_id, trx_id, 'Cost of Goods Sold', total_cogs, 0);
+        
+        -- Credit Inventory (Asset decreases)
+        INSERT INTO public.ledger_entries (business_id, transaction_id, account_name, debit, credit)
+        VALUES (NEW.business_id, trx_id, 'Inventory', 0, total_cogs);
+        
+        -- Update inventory product quantities (if linked)
+        FOR item_record IN 
+          SELECT product_id, quantity 
+          FROM public.invoice_items 
+          WHERE invoice_id = NEW.id AND product_id IS NOT NULL
+        LOOP
+          UPDATE public.inventory_products 
+          SET quantity = quantity - item_record.quantity,
+              updated_at = now()
+          WHERE id = item_record.product_id;
+        END LOOP;
+     END IF;
+
+     -- GST Record for tax reporting
      period := to_char(NEW.invoice_date, 'YYYY-MM');
      
      IF NEW.gst_amount > 0 THEN

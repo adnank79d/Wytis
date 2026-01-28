@@ -239,7 +239,7 @@ export function MainDashboard({ metrics, activity, subscription, userRole, userN
                 <Card className="rounded-xl md:rounded-2xl border border-border/40 bg-card shadow-sm hover:shadow-md transition-all duration-300 hover:border-border/60 hover:translate-y-[-2px] sm:col-span-2 lg:col-span-1 group">
                     <CardContent className="p-3 md:p-4 flex items-center gap-3">
                         <Avatar className="h-10 w-10 md:h-11 md:w-11 border-2 border-primary/10">
-                            <AvatarImage src="/placeholder-user.jpg" />
+                            <AvatarImage src="" />
                             <AvatarFallback className="bg-primary/5 text-primary text-xs md:text-sm font-semibold">
                                 {userName?.charAt(0).toUpperCase() || 'U'}
                             </AvatarFallback>
