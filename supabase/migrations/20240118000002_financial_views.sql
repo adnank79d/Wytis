@@ -12,13 +12,23 @@ SELECT
   business_id,
   account_name,
   CASE
-    WHEN account_name IN ('Sales', 'Other Income') THEN 'Income'
-    WHEN account_name IN ('Cost of Goods Sold', 'Expense', 'Salaries', 'Rent') THEN 'Expense'
-    ELSE 'Other' -- Fallback
+    WHEN account_name IN ('Sales', 'Other Income', 'Interest Income') THEN 'Income'
+    ELSE 'Expense' -- Default everything else (that isn't filtered out below) to Expense
   END as category,
-  SUM(credit - debit) as net_amount -- Positive for Income, Negative for Expense if using purely credit-debit logic
+  SUM(credit - debit) as net_amount -- Positive for Income, Negative for Expense
 FROM public.ledger_entries
-WHERE account_name IN ('Sales', 'Other Income', 'Cost of Goods Sold', 'Expense', 'Salaries', 'Rent')
+WHERE account_name NOT IN (
+    -- Balance Sheet Accounts (Exclude from P&L)
+    'Accounts Receivable', 
+    'Bank', 
+    'Cash', 
+    'Inventory', 
+    'Accounts Payable', 
+    'GST Payable', 
+    'Capital', 
+    'Retained Earnings',
+    'Opening Balance Equity'
+)
 GROUP BY business_id, account_name;
 
 --------------------------------------------------------------------------------

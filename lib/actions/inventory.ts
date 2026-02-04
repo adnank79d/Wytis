@@ -10,6 +10,7 @@ export type InventoryProduct = {
     id: string;
     business_id: string;
     category_id: string | null;
+    type: 'goods' | 'service';
     name: string;
     sku: string | null;
     description: string | null;
@@ -20,6 +21,7 @@ export type InventoryProduct = {
     reorder_level: number;
     hsn_code: string | null;
     gst_rate: number;
+    prices_include_tax: boolean;
     is_active: boolean;
     created_at: string;
     updated_at: string;
@@ -37,6 +39,7 @@ export type InventoryCategory = {
 // Schemas
 const ProductSchema = z.object({
     name: z.string().min(1, "Product name is required"),
+    type: z.enum(['goods', 'service']).default('goods'),
     sku: z.string().optional(),
     description: z.string().optional(),
     category_id: z.string().optional(),
@@ -47,6 +50,7 @@ const ProductSchema = z.object({
     reorder_level: z.coerce.number().min(0).default(10),
     hsn_code: z.string().optional(),
     gst_rate: z.coerce.number().min(0).max(100).default(18),
+    prices_include_tax: z.preprocess(value => value === 'true' || value === true, z.boolean()).default(false),
 });
 
 const CategorySchema = z.object({
@@ -146,6 +150,7 @@ export async function addProduct(prevState: ProductFormState, formData: FormData
     const validatedFields = ProductSchema.safeParse({
         name: formData.get('name'),
         sku: formData.get('sku') || undefined,
+        type: (formData.get('type') as 'goods' | 'service') || 'goods',
         description: formData.get('description') || undefined,
         category_id: formData.get('category_id') || undefined,
         unit: formData.get('unit') || 'pcs',
@@ -155,6 +160,7 @@ export async function addProduct(prevState: ProductFormState, formData: FormData
         reorder_level: formData.get('reorder_level') || 10,
         hsn_code: formData.get('hsn_code') || undefined,
         gst_rate: formData.get('gst_rate') || 18,
+        prices_include_tax: formData.get('prices_include_tax'),
     });
 
     if (!validatedFields.success) {
@@ -171,6 +177,7 @@ export async function addProduct(prevState: ProductFormState, formData: FormData
         .insert({
             business_id: businessId,
             name: data.name,
+            type: data.type,
             sku: data.sku || null,
             description: data.description || null,
             category_id: data.category_id || null,
@@ -181,6 +188,7 @@ export async function addProduct(prevState: ProductFormState, formData: FormData
             reorder_level: data.reorder_level,
             hsn_code: data.hsn_code || null,
             gst_rate: data.gst_rate,
+            prices_include_tax: data.prices_include_tax,
         });
 
     if (error) {
@@ -203,6 +211,7 @@ export async function updateProduct(productId: string, prevState: ProductFormSta
 
     const validatedFields = ProductSchema.safeParse({
         name: formData.get('name'),
+        type: (formData.get('type') as 'goods' | 'service') || 'goods',
         sku: formData.get('sku') || undefined,
         description: formData.get('description') || undefined,
         category_id: formData.get('category_id') || undefined,
@@ -213,6 +222,7 @@ export async function updateProduct(productId: string, prevState: ProductFormSta
         reorder_level: formData.get('reorder_level') || 10,
         hsn_code: formData.get('hsn_code') || undefined,
         gst_rate: formData.get('gst_rate') || 18,
+        prices_include_tax: formData.get('prices_include_tax'),
     });
 
     if (!validatedFields.success) {
@@ -228,6 +238,7 @@ export async function updateProduct(productId: string, prevState: ProductFormSta
         .from('inventory_products')
         .update({
             name: data.name,
+            type: data.type,
             sku: data.sku || null,
             description: data.description || null,
             category_id: data.category_id || null,
@@ -238,6 +249,7 @@ export async function updateProduct(productId: string, prevState: ProductFormSta
             reorder_level: data.reorder_level,
             hsn_code: data.hsn_code || null,
             gst_rate: data.gst_rate,
+            prices_include_tax: data.prices_include_tax,
             updated_at: new Date().toISOString(),
         })
         .eq('id', productId)

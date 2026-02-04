@@ -59,25 +59,25 @@ export function CustomersTable({ customers }: CustomersTableProps) {
 
     const getStatusColor = (status: string) => {
         switch (status) {
-            case 'lead': return 'bg-blue-100 text-blue-800 hover:bg-blue-100';
-            case 'prospect': return 'bg-purple-100 text-purple-800 hover:bg-purple-100';
-            case 'customer': return 'bg-emerald-100 text-emerald-800 hover:bg-emerald-100';
-            case 'inactive': return 'bg-gray-100 text-gray-800 hover:bg-gray-100';
-            default: return 'bg-gray-100 text-gray-800';
+            case 'lead': return 'bg-blue-50 text-blue-700 hover:bg-blue-100 border-blue-200';
+            case 'prospect': return 'bg-purple-50 text-purple-700 hover:bg-purple-100 border-purple-200';
+            case 'customer': return 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border-emerald-200';
+            case 'inactive': return 'bg-slate-100 text-slate-700 hover:bg-slate-200 border-slate-200';
+            default: return 'bg-slate-100 text-slate-700 hover:bg-slate-200';
         }
     };
 
     return (
-        <div className="space-y-4">
+        <div className="space-y-0">
             {/* Toolbar */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-between px-6 pt-6 pb-2">
+            <div className="flex flex-col sm:flex-row gap-4 justify-between px-4 py-4 border-b border-slate-100 bg-slate-50/50">
                 <div className="relative w-full max-w-sm">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                     <Input
-                        placeholder="Search by name, email, or company..."
+                        placeholder="Search customers..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="pl-9 bg-muted/10 border-muted"
+                        className="pl-9 bg-white border-slate-200 focus:border-indigo-300 focus:ring-indigo-100 transition-all text-sm rounded-lg"
                     />
                 </div>
 
@@ -85,12 +85,14 @@ export function CustomersTable({ customers }: CustomersTableProps) {
                     {['All', 'lead', 'prospect', 'customer'].map(status => (
                         <Button
                             key={status}
-                            variant={statusFilter === status ? "secondary" : "ghost"}
+                            variant="ghost"
                             size="sm"
                             onClick={() => setStatusFilter(status)}
                             className={cn(
-                                "capitalize rounded-full text-xs font-medium px-3",
-                                statusFilter === status && "bg-primary/10 text-primary hover:bg-primary/20"
+                                "capitalize rounded-md text-xs font-medium px-3 transition-all",
+                                statusFilter === status
+                                    ? "bg-white text-slate-900 shadow-sm border border-slate-200"
+                                    : "text-slate-500 hover:text-slate-900 hover:bg-slate-200/50"
                             )}
                         >
                             {status}
@@ -102,72 +104,76 @@ export function CustomersTable({ customers }: CustomersTableProps) {
             {/* Table */}
             <div>
                 <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>Name / Company</TableHead>
-                            <TableHead>Contact</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead>Tags</TableHead>
+                    <TableHeader className="bg-slate-50/80">
+                        <TableRow className="border-b border-slate-100 hover:bg-transparent">
+                            <TableHead className="w-[50px] font-semibold text-xs uppercase tracking-wider text-slate-500 pl-4">#</TableHead>
+                            <TableHead className="font-semibold text-xs uppercase tracking-wider text-slate-500">Name / Company</TableHead>
+                            <TableHead className="font-semibold text-xs uppercase tracking-wider text-slate-500">Contact</TableHead>
+                            <TableHead className="font-semibold text-xs uppercase tracking-wider text-slate-500">Status</TableHead>
+                            <TableHead className="font-semibold text-xs uppercase tracking-wider text-slate-500">Tags</TableHead>
                             <TableHead className="w-[50px]"></TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {filtered.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
-                                    No customers found.
+                                <TableCell colSpan={6} className="h-32 text-center text-slate-400 text-sm">
+                                    No customers found matching your criteria.
                                 </TableCell>
                             </TableRow>
                         ) : (
-                            filtered.map((customer) => (
+                            filtered.map((customer, index) => (
                                 <TableRow
                                     key={customer.id}
-                                    className="cursor-pointer hover:bg-muted/50"
+                                    className="cursor-pointer hover:bg-slate-50/50 transition-colors border-b border-slate-50 last:border-0 group"
                                     onClick={() => handleRowClick(customer)}
                                 >
+                                    <TableCell className="text-xs text-slate-400 font-mono pl-4">
+                                        {index + 1}
+                                    </TableCell>
                                     <TableCell>
                                         <div className="flex flex-col">
-                                            <span className="font-medium">{customer.name}</span>
+                                            <span className="font-semibold text-slate-700 group-hover:text-slate-900 transition-colors">{customer.name}</span>
                                             {customer.company_name && (
-                                                <span className="text-xs text-muted-foreground flex items-center gap-1">
-                                                    <Building className="h-3 w-3" /> {customer.company_name}
+                                                <span className="text-xs text-slate-500 flex items-center gap-1.5 mt-0.5">
+                                                    <Building className="h-3 w-3 opacity-70" /> {customer.company_name}
                                                 </span>
                                             )}
                                         </div>
                                     </TableCell>
                                     <TableCell>
-                                        <div className="flex flex-col gap-1">
+                                        <div className="flex flex-col gap-1.5">
                                             {customer.email && (
-                                                <span className="text-xs flex items-center gap-1 text-muted-foreground">
-                                                    <Mail className="h-3 w-3" /> {customer.email}
+                                                <span className="text-xs flex items-center gap-1.5 text-slate-500 hover:text-indigo-600 transition-colors">
+                                                    <Mail className="h-3 w-3 opacity-70" /> {customer.email}
                                                 </span>
                                             )}
                                             {customer.phone && (
-                                                <span className="text-xs flex items-center gap-1 text-muted-foreground">
-                                                    <Phone className="h-3 w-3" /> {customer.phone}
+                                                <span className="text-xs flex items-center gap-1.5 text-slate-500">
+                                                    <Phone className="h-3 w-3 opacity-70" /> {customer.phone}
                                                 </span>
                                             )}
                                         </div>
                                     </TableCell>
                                     <TableCell>
-                                        <Badge className={getStatusColor(customer.status)} variant="secondary">
+                                        <Badge className={cn("border rounded-md px-2 py-0.5 text-[10px] font-semibold tracking-wide uppercase shadow-none", getStatusColor(customer.status))} variant="secondary">
                                             {customer.status}
                                         </Badge>
                                     </TableCell>
                                     <TableCell>
-                                        <div className="flex gap-1 flex-wrap">
+                                        <div className="flex gap-1.5 flex-wrap">
                                             {customer.tags && customer.tags.slice(0, 2).map(tag => (
-                                                <span key={tag} className="px-1.5 py-0.5 bg-muted rounded text-[10px] text-muted-foreground border">
+                                                <span key={tag} className="px-1.5 py-0.5 bg-slate-50 rounded text-[10px] font-medium text-slate-600 border border-slate-200">
                                                     {tag}
                                                 </span>
                                             ))}
                                             {customer.tags && customer.tags.length > 2 && (
-                                                <span className="text-[10px] text-muted-foreground">+{customer.tags.length - 2}</span>
+                                                <span className="text-[10px] text-slate-400 font-medium self-center">+{customer.tags.length - 2}</span>
                                             )}
                                         </div>
                                     </TableCell>
                                     <TableCell>
-                                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 opacity-0 group-hover:opacity-100 transition-all hover:text-slate-700">
                                             <MoreHorizontal className="h-4 w-4" />
                                         </Button>
                                     </TableCell>

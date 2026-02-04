@@ -2,12 +2,12 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Plus, Package, AlertTriangle, IndianRupee } from "lucide-react";
+import { Plus, Package, AlertTriangle, IndianRupee, Box, TrendingUp, AlertOctagon, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Role } from "@/lib/permissions";
 import { getInventory, getInventoryStats } from "@/lib/actions/inventory";
 import { InventoryTable } from "@/components/inventory/inventory-table";
+import { AddProductDialog } from "./_components/add-product-dialog";
 
 export const dynamic = 'force-dynamic';
 
@@ -63,82 +63,86 @@ export default async function InventoryPage() {
     };
 
     return (
-        <div className="max-w-7xl mx-auto py-4 md:py-8 px-3 md:px-6 space-y-6">
+        <div className="flex flex-col gap-8 max-w-[1600px] mx-auto w-full pb-10 animate-in fade-in duration-500 bg-background p-4 sm:p-6 lg:p-8">
             {/* HEADER */}
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-3 md:gap-6">
-                <div className="space-y-0.5">
-                    <h1 className="text-xl md:text-3xl font-bold tracking-tight text-foreground">
-                        Inventory
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-2">
+                <div>
+                    <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-slate-900">
+                        Inventory <span className="text-slate-900">Management</span>
                     </h1>
-                    <p className="text-xs md:text-sm text-muted-foreground/80">
-                        Manage your products and stock levels.
+                    <p className="text-sm text-slate-500 mt-2 font-medium">
+                        Track stock levels, value, and product details.
                     </p>
                 </div>
-                <div className="flex items-center gap-2">
-                    {canEdit && (
-                        <Button asChild size="sm" className="h-9">
-                            <Link href="/inventory/new">
-                                <Plus className="mr-1.5 h-4 w-4" />
-                                Add Product
-                            </Link>
-                        </Button>
-                    )}
+                <div className="flex items-center gap-3">
+                    {canEdit && <AddProductDialog categories={inventoryData.categories} />}
                 </div>
             </div>
 
-            {/* STATS CARDS */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <Card className="rounded-xl border border-border/40 bg-card shadow-sm">
-                    <CardContent className="p-4 flex items-center justify-between">
-                        <div>
-                            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Total Products</p>
-                            <p className="text-2xl font-bold mt-1">{stats.totalProducts}</p>
-                        </div>
-                        <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                            <Package className="h-5 w-5 text-primary" />
-                        </div>
-                    </CardContent>
-                </Card>
-
-                <Card className={cn(
-                    "rounded-xl border shadow-sm transition-colors",
-                    stats.lowStock > 0 ? "border-amber-200 bg-amber-50 dark:bg-amber-950/20" : "border-border/40 bg-card"
-                )}>
-                    <CardContent className="p-4 flex items-center justify-between">
-                        <div>
-                            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Low Stock</p>
-                            <p className={cn("text-2xl font-bold mt-1", stats.lowStock > 0 ? "text-amber-600" : "")}>
-                                {stats.lowStock}
-                            </p>
-                        </div>
-                        <div className={cn(
-                            "h-10 w-10 rounded-full flex items-center justify-center",
-                            stats.lowStock > 0 ? "bg-amber-100 text-amber-600" : "bg-muted text-muted-foreground"
-                        )}>
-                            <AlertTriangle className="h-5 w-5" />
-                        </div>
-                    </CardContent>
-                </Card>
-
-                <Card className="rounded-xl border border-border/40 bg-card shadow-sm">
-                    <CardContent className="p-4 flex items-center justify-between">
-                        <div>
-                            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Total Value</p>
-                            <p className="text-2xl font-bold mt-1">{formatCurrency(stats.totalValue)}</p>
-                        </div>
-                        <div className="h-10 w-10 rounded-full bg-emerald-100 dark:bg-emerald-950/30 flex items-center justify-center">
-                            <IndianRupee className="h-5 w-5 text-emerald-600" />
-                        </div>
-                    </CardContent>
-                </Card>
+            {/* KPI ROW */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <KpICard
+                    title="Total Value"
+                    value={formatCurrency(stats.totalValue)}
+                    icon={IndianRupee}
+                    color="emerald"
+                    subtext="Asset Valuation"
+                />
+                <KpICard
+                    title="Total Products"
+                    value={stats.totalProducts}
+                    icon={Box}
+                    color="indigo"
+                    subtext="Active SKUs"
+                />
+                <KpICard
+                    title="Low Stock"
+                    value={stats.lowStock}
+                    icon={AlertOctagon}
+                    color="rose"
+                    subtext="Requires Attention"
+                    isAlert={stats.lowStock > 0}
+                />
+                <KpICard
+                    title="Stock Health"
+                    value={stats.lowStock === 0 ? "100%" : `${Math.round(((stats.totalProducts - stats.lowStock) / stats.totalProducts) * 100)}%`}
+                    icon={CheckCircle2}
+                    color="slate"
+                    subtext="Items In Stock"
+                />
             </div>
 
-            {/* MAIN TABLE */}
-            <InventoryTable
-                products={inventoryData.products}
-                categories={inventoryData.categories}
-                canEdit={canEdit}
-            />
+            {/* MAIN CONTENT */}
+            <div className="space-y-4">
+                <InventoryTable
+                    products={inventoryData.products}
+                    categories={inventoryData.categories}
+                    canEdit={canEdit}
+                />
+            </div>
+        </div >
+    );
+}
+
+function KpICard({ title, value, subtext, icon: Icon, color = "slate", isAlert = false }: any) {
+    const styles: any = {
+        indigo: { bg: "bg-indigo-50/50 hover:bg-indigo-50", border: "border-indigo-100 hover:border-indigo-200", iconBg: "bg-indigo-100 text-indigo-600", text: "text-slate-900" },
+        emerald: { bg: "bg-emerald-50/50 hover:bg-emerald-50", border: "border-emerald-100 hover:border-emerald-200", iconBg: "bg-emerald-100 text-emerald-600", text: "text-slate-900" },
+        rose: { bg: isAlert ? "bg-rose-50 border-rose-200" : "bg-rose-50/50 hover:bg-rose-50 border-rose-100 hover:border-rose-200", iconBg: isAlert ? "bg-rose-100 text-rose-600 animate-pulse" : "bg-rose-100 text-rose-600", text: isAlert ? "text-rose-700" : "text-slate-900" },
+        slate: { bg: "bg-slate-50/50 hover:bg-slate-50", border: "border-slate-100 hover:border-slate-200", iconBg: "bg-slate-100 text-slate-600", text: "text-slate-900" },
+    };
+    const s = styles[color];
+
+    return (
+        <div className={cn("rounded-xl border p-4 flex flex-col justify-between min-h-[110px] transition-all duration-200 group cursor-default", s.bg, s.border)}>
+            <div className="flex justify-between items-start mb-3">
+                <span className="text-xs font-semibold uppercase tracking-wider text-slate-500/90">{title}</span>
+                {Icon && (<div className={cn("p-1.5 rounded-md transition-colors", s.iconBg)}><Icon className="w-4 h-4" /></div>)}
+            </div>
+            <div className="space-y-1">
+                <div className={cn("text-2xl font-bold tracking-tight", s.text)}>{value}</div>
+                {subtext && (<span className="text-xs text-slate-500 font-medium">{subtext}</span>)}
+            </div>
         </div>
     );
 }

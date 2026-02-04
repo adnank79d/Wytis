@@ -107,6 +107,7 @@ export async function addExpense(prevState: ExpenseFormState, formData: FormData
     // If tracking GST separately in ledger is needed, we would update trigger.
     // For now, we assume simple expense debit.
 
+    // ... (addExpense updates)
     const { error } = await supabase
         .from('expenses')
         .insert({
@@ -119,6 +120,7 @@ export async function addExpense(prevState: ExpenseFormState, formData: FormData
             notes: data.notes || null,
             gst_amount: data.gst_amount,
             supplier_gstin: data.supplier_gstin || null,
+            status: 'draft' // Default to draft
         });
 
     if (error) {
@@ -126,11 +128,25 @@ export async function addExpense(prevState: ExpenseFormState, formData: FormData
     }
 
     revalidatePath('/expenses');
-    revalidatePath('/dashboard');
-    revalidatePath('/reports');
-    revalidatePath('/gst');
+    return { message: "Expense draft created", success: true };
+}
 
-    return { message: "Expense added successfully", success: true };
+export async function postExpense(expenseId: string) {
+    const supabase = await createClient();
+    const businessId = await getBusinessId();
+    if (!businessId) return { success: false, message: "Unauthorized" };
+
+    const { error } = await supabase
+        .from('expenses')
+        .update({ status: 'posted' })
+        .eq('id', expenseId)
+        .eq('business_id', businessId);
+
+    if (error) return { success: false, message: error.message };
+
+    revalidatePath('/expenses');
+    revalidatePath('/dashboard');
+    return { success: true, message: "Expense posted to ledger" };
 }
 
 export async function deleteExpense(id: string) {

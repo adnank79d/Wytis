@@ -26,6 +26,7 @@ const CreateInvoiceSchema = z.object({
     items: z.array(InvoiceItemSchema).min(1, "At least one item is required"),
     status: z.enum(['draft', 'issued']),
     notes: z.string().optional(),
+    discount: z.coerce.number().min(0).default(0),
 });
 
 export type CreateInvoiceState = {
@@ -113,6 +114,7 @@ export async function createInvoice(prevState: CreateInvoiceState, formData: For
         due_date: formData.get('due_date') || undefined,
         status: formData.get('status'),
         notes: formData.get('notes') || undefined,
+        discount: formData.get('discount') || 0,
         items: items,
     });
 
@@ -123,7 +125,7 @@ export async function createInvoice(prevState: CreateInvoiceState, formData: For
         };
     }
 
-    const { customer_id, customer_name, invoice_date, due_date, status, notes, items: validItems } = validatedFields.data;
+    const { customer_id, customer_name, invoice_date, due_date, status, notes, discount, items: validItems } = validatedFields.data;
 
     // Enforce Billing Limits
     const { getBillingCapabilities } = await import('@/lib/billing/capabilities');
@@ -136,9 +138,17 @@ export async function createInvoice(prevState: CreateInvoiceState, formData: For
     const invoice_number = await generateInvoiceNumber(supabase, businessId);
 
     // Calculate Totals
+    // Note: unit_price is stored as tax-exclusive (already converted if prices_include_tax was true)
     const subtotal = validItems.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0);
-    const gst_amount = validItems.reduce((sum, item) => sum + (item.quantity * item.unit_price * (item.gst_rate / 100)), 0);
-    const total_amount = subtotal + gst_amount;
+
+    // GST Calculation: Round each line item's GST to 2 decimals before summing
+    // This matches the client-side calculation and prevents floating-point errors
+    const gst_amount = validItems.reduce((sum, item) => {
+        const lineGst = item.quantity * item.unit_price * (item.gst_rate / 100);
+        return sum + Math.round(lineGst * 100) / 100;
+    }, 0);
+
+    const total_amount = Math.max(0, (Math.round((subtotal + gst_amount) * 100) / 100) - discount);
 
     // Insert Invoice
     const { data: invoice, error: invoiceError } = await supabase
@@ -155,7 +165,8 @@ export async function createInvoice(prevState: CreateInvoiceState, formData: For
             total_amount,
             status,
             notes: notes || null,
-        })
+            discount_amount: discount, // Added discount_amount
+        } as any) // Cast to any to avoid type error until migration is applied
         .select()
         .single();
 
@@ -164,17 +175,42 @@ export async function createInvoice(prevState: CreateInvoiceState, formData: For
         return { message: `Database Error: ${invoiceError.message}` };
     }
 
+    // Prepare Cost Prices map for products
+    const productIds = validItems.map(i => i.product_id).filter(Boolean) as string[];
+    let productCosts: Record<string, number> = {};
+
+    if (productIds.length > 0) {
+        const { data: products } = await supabase
+            .from('inventory_products')
+            .select('id, cost_price')
+            .in('id', productIds);
+
+        console.log("Fetched Products for Cost:", products); // DEBUG LOG
+
+        products?.forEach(p => {
+            productCosts[p.id] = Number(p.cost_price || 0);
+        });
+    }
+
+    console.log("Cost Map:", productCosts); // DEBUG LOG
+
     // Insert Items (with cost_price for COGS calculation)
-    const itemsData = validItems.map(item => ({
-        invoice_id: invoice.id,
-        product_id: item.product_id || null,
-        description: item.description,
-        quantity: item.quantity,
-        unit_price: item.unit_price,
-        cost_price: item.cost_price || 0,
-        gst_rate: item.gst_rate,
-        line_total: (item.quantity * item.unit_price) * (1 + item.gst_rate / 100)
-    }));
+    const itemsData = validItems.map(item => {
+        const dbCost = item.product_id ? productCosts[item.product_id] : undefined;
+        // Prioritize DB cost, then item cost (from form?), then 0
+        const finalCost = dbCost !== undefined ? dbCost : (item.cost_price || 0);
+
+        return {
+            invoice_id: invoice.id,
+            product_id: item.product_id || null,
+            description: item.description,
+            quantity: item.quantity,
+            unit_price: item.unit_price,
+            cost_price: finalCost,
+            gst_rate: item.gst_rate,
+            line_total: (item.quantity * item.unit_price) * (1 + item.gst_rate / 100)
+        };
+    });
 
     const { error: itemsError } = await supabase
         .from('invoice_items')
@@ -196,16 +232,23 @@ export async function createInvoice(prevState: CreateInvoiceState, formData: For
 // ACTION: Issue Invoice (Convert Draft to Issued)
 // ============================================================================
 
+// ============================================================================
+// ACTION: Issue Invoice (Convert Draft to Issued)
+// ============================================================================
+
 export async function issueInvoice(invoiceId: string) {
     const context = await getBusinessContext();
     if (!context) return { success: false, message: 'Unauthorized' };
 
     const { supabase, businessId } = context;
 
-    // Verify ownership and current status
+    // 1. Fetch Invoice + Items
     const { data: invoice, error: fetchError } = await supabase
         .from('invoices')
-        .select('id, status, invoice_number')
+        .select(`
+            *,
+            invoice_items (*)
+        `)
         .eq('id', invoiceId)
         .eq('business_id', businessId)
         .single();
@@ -218,7 +261,37 @@ export async function issueInvoice(invoiceId: string) {
         return { success: false, message: `Cannot issue invoice: current status is "${invoice.status}"` };
     }
 
-    // Update status to issued (trigger will create ledger entries)
+    // 2. Determine Place of Supply
+    // Fetch Business State
+    const { data: business } = await supabase
+        .from('businesses')
+        .select('state')
+        .eq('id', businessId)
+        .single();
+
+    // Fetch Customer State
+    let customerState = null;
+    if (invoice.customer_id) {
+        const { data: customer } = await supabase
+            .from('customers')
+            .select('state')
+            .eq('id', invoice.customer_id)
+            .single();
+        customerState = customer?.state;
+    }
+
+    // Default to Intra-state (CGST+SGST) if states match or unknown (safest default for local business)
+    // Or Inter-state (IGST) if different. 
+    // If state is missing, we assume local (Intra-state) for now as typical behavior.
+    const isInterState = business?.state && customerState && business.state.toLowerCase() !== customerState.toLowerCase();
+
+    // 3. Update status to issued
+    // The database trigger (handle_invoice_issued) will automatically:
+    // 1. Create transaction record
+    // 2. Create ledger entries (Dr AR, Cr Sales, Cr GST)
+    // 3. Record COGS entries (Dr COGS, Cr Inventory)
+    // 4. Create GST records for compliance
+    // 5. Update inventory quantities
     const { error: updateError } = await supabase
         .from('invoices')
         .update({ status: 'issued' })
@@ -266,7 +339,11 @@ export async function markInvoiceAsPaid(invoiceId: string, amount: number) {
         return { success: false, message: 'Cannot mark a draft invoice as paid. Issue it first.' };
     }
 
-    // Update Invoice Status (status column is guaranteed to exist)
+    // Update Invoice Status
+    // The database trigger (handle_invoice_paid) will automatically:
+    // 1. Create payment transaction
+    // 2. Create ledger entries (Dr Bank, Cr AR)
+    // 3. Log audit trail
     const { error: updateError } = await supabase
         .from('invoices')
         .update({ status: 'paid' })
@@ -275,53 +352,6 @@ export async function markInvoiceAsPaid(invoiceId: string, amount: number) {
     if (updateError) {
         console.error('Update Error', updateError);
         return { success: false, message: 'Failed to update invoice status' };
-    }
-
-    // Create Accounting Transaction
-    // Debit Bank (Asset +), Credit Accounts Receivable (Asset -)
-    const { data: transaction, error: txError } = await supabase
-        .from('transactions')
-        .insert({
-            business_id: businessId,
-            source_type: 'invoice', // Use 'invoice' as source_type (valid in constraint)
-            source_id: invoiceId,
-            amount: amount,
-            transaction_type: 'credit',
-            transaction_date: new Date().toISOString().split('T')[0] // Date only
-        })
-        .select()
-        .single();
-
-    if (txError) {
-        console.error('Transaction Error', txError);
-        // Revert invoice status
-        await supabase.from('invoices').update({ status: 'issued' }).eq('id', invoiceId);
-        return { success: false, message: 'Failed to create accounting transaction: ' + txError.message };
-    }
-
-    // Create Ledger Entries
-    const ledgerEntries = [
-        {
-            business_id: businessId,
-            transaction_id: transaction.id,
-            account_name: 'Bank',
-            debit: amount,
-            credit: 0
-        },
-        {
-            business_id: businessId,
-            transaction_id: transaction.id,
-            account_name: 'Accounts Receivable',
-            debit: 0,
-            credit: amount
-        }
-    ];
-
-    const { error: ledgerError } = await supabase.from('ledger_entries').insert(ledgerEntries);
-
-    if (ledgerError) {
-        console.error('Ledger Error', ledgerError);
-        return { success: false, message: 'Payment recorded, but ledger update failed.' };
     }
 
     revalidatePath(`/invoices/${invoiceId}`);
@@ -347,48 +377,35 @@ export async function deleteInvoice(invoiceId: string) {
         return { success: false, message: 'Only the business owner can delete invoices' };
     }
 
-    // Verify ownership and current status
-    const { data: invoice, error: fetchError } = await supabase
-        .from('invoices')
-        .select('id, status, invoice_number')
-        .eq('id', invoiceId)
-        .eq('business_id', businessId)
-        .single();
+    // Call database function to handle cleanup with SECURITY DEFINER
+    const { data, error } = await supabase.rpc('delete_invoice_with_cleanup', {
+        p_invoice_id: invoiceId,
+        p_business_id: businessId
+    });
 
-    if (fetchError || !invoice) {
-        return { success: false, message: 'Invoice not found' };
+    if (error) {
+        console.error('Delete Invoice Error', error);
+        return { success: false, message: error.message || 'Failed to delete invoice' };
     }
 
-    // Only allow deletion of draft invoices
-    if (invoice.status !== 'draft') {
-        return {
-            success: false,
-            message: `Cannot delete ${invoice.status} invoice. Only draft invoices can be deleted.`
-        };
-    }
+    // data is the jsonb object returned by the function
+    const result = data as { success: boolean; message: string };
 
-    // Delete invoice (cascade will delete items)
-    const { error: deleteError } = await supabase
-        .from('invoices')
-        .delete()
-        .eq('id', invoiceId);
-
-    if (deleteError) {
-        console.error('Delete Invoice Error', deleteError);
-        return { success: false, message: 'Failed to delete invoice' };
+    if (!result.success) {
+        return result;
     }
 
     revalidatePath('/invoices');
     revalidatePath('/dashboard');
 
-    return { success: true, message: `Draft invoice ${invoice.invoice_number} deleted` };
+    return result;
 }
 
 // ============================================================================
 // ACTION: Void Invoice (For issued/paid invoices - creates reversal)
 // ============================================================================
 
-export async function voidInvoice(invoiceId: string, reason: string) {
+export async function voidInvoice(invoiceId: string, reason?: string) {
     const context = await getBusinessContext();
     if (!context) return { success: false, message: 'Unauthorized' };
 
@@ -402,7 +419,7 @@ export async function voidInvoice(invoiceId: string, reason: string) {
     // Verify ownership
     const { data: invoice, error: fetchError } = await supabase
         .from('invoices')
-        .select('*')
+        .select('id, status, invoice_number')
         .eq('id', invoiceId)
         .eq('business_id', businessId)
         .single();
@@ -411,7 +428,7 @@ export async function voidInvoice(invoiceId: string, reason: string) {
         return { success: false, message: 'Invoice not found' };
     }
 
-    if (invoice.status === 'voided') {
+    if (invoice.status === 'cancelled') {
         return { success: false, message: 'Invoice is already voided' };
     }
 
@@ -419,67 +436,21 @@ export async function voidInvoice(invoiceId: string, reason: string) {
         return { success: false, message: 'Cannot void a draft. Delete it instead.' };
     }
 
-    // Update status to voided
-    const { error: updateError } = await supabase
-        .from('invoices')
-        .update({
-            status: 'voided',
-            voided_at: new Date().toISOString(),
-            void_reason: reason
-        })
-        .eq('id', invoiceId);
-
-    if (updateError) {
-        return { success: false, message: 'Failed to void invoice' };
+    // Allow voiding of both 'issued' and 'paid' invoices
+    if (invoice.status !== 'issued' && invoice.status !== 'paid') {
+        return { success: false, message: `Cannot void ${invoice.status} invoice. Only issued or paid invoices can be voided.` };
     }
 
-    // Create reversal ledger entries
-    const { data: transaction, error: txError } = await supabase
-        .from('transactions')
-        .insert({
-            business_id: businessId,
-            description: `VOID: Invoice #${invoice.invoice_number} - ${reason}`,
-            transaction_date: new Date().toISOString(),
-            source_type: 'void',
-            source_id: invoiceId,
-            amount: invoice.total_amount,
-            transaction_type: 'debit'
-        })
-        .select()
-        .single();
+    // Update status to 'cancelled' (Trigger will handle accounting reversals)
+    const { error: updateError } = await supabase
+        .from('invoices')
+        .update({ status: 'cancelled' })
+        .eq('id', invoiceId)
+        .eq('business_id', businessId);
 
-    if (!txError && transaction) {
-        // Reverse the original entries
-        const reversalEntries = [
-            // Reverse AR (credit becomes debit)
-            {
-                business_id: businessId,
-                transaction_id: transaction.id,
-                account_name: 'Accounts Receivable',
-                debit: 0,
-                credit: invoice.total_amount
-            },
-            // Reverse Sales (debit what was credited)
-            {
-                business_id: businessId,
-                transaction_id: transaction.id,
-                account_name: 'Sales',
-                debit: invoice.subtotal,
-                credit: 0
-            }
-        ];
-
-        if (invoice.gst_amount > 0) {
-            reversalEntries.push({
-                business_id: businessId,
-                transaction_id: transaction.id,
-                account_name: 'GST Payable',
-                debit: invoice.gst_amount,
-                credit: 0
-            });
-        }
-
-        await supabase.from('ledger_entries').insert(reversalEntries);
+    if (updateError) {
+        console.error('Void Invoice Error', updateError);
+        return { success: false, message: updateError.message || 'Failed to void invoice' };
     }
 
     revalidatePath(`/invoices/${invoiceId}`);
@@ -489,6 +460,7 @@ export async function voidInvoice(invoiceId: string, reason: string) {
 
     return { success: true, message: `Invoice ${invoice.invoice_number} has been voided` };
 }
+
 
 // ============================================================================
 // ACTION: Get Customers

@@ -76,6 +76,7 @@ type InventoryProduct = {
     cost_price?: number;
     gst_rate: number;
     quantity: number;
+    prices_include_tax?: boolean;
 };
 
 interface NewInvoiceFormProps {
@@ -105,11 +106,20 @@ export function NewInvoiceForm({ existingCustomers, inventoryProducts = [] }: Ne
         control: form.control,
     });
 
+
     // Calculations
+    // Note: unit_price is always stored as tax-exclusive (converted if product.prices_include_tax was true)
     const items = form.watch("items");
     const subtotal = items.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0);
-    const totalGst = items.reduce((sum, item) => sum + (item.quantity * item.unit_price * (item.gst_rate / 100)), 0);
-    const grandTotal = subtotal + totalGst;
+
+    // GST Calculation: Round each line item's GST to 2 decimals before summing
+    // This prevents floating-point accumulation errors
+    const totalGst = items.reduce((sum, item) => {
+        const lineGst = item.quantity * item.unit_price * (item.gst_rate / 100);
+        return sum + Math.round(lineGst * 100) / 100; // Round to 2 decimal places
+    }, 0);
+
+    const grandTotal = Math.round((subtotal + totalGst) * 100) / 100; // Round final total
     const totalCost = items.reduce((sum, item) => sum + (item.quantity * (item.cost_price || 0)), 0);
     const estimatedProfit = subtotal - totalCost;
 
@@ -398,8 +408,22 @@ export function NewInvoiceForm({ existingCustomers, inventoryProducts = [] }: Ne
                                                                                         onSelect={() => {
                                                                                             form.setValue(`items.${index}.product_id`, product.id);
                                                                                             form.setValue(`items.${index}.description`, product.name);
-                                                                                            form.setValue(`items.${index}.unit_price`, product.unit_price);
-                                                                                            form.setValue(`items.${index}.cost_price`, product.cost_price || 0);
+
+                                                                                            // Calculate Base Price if stored as Inclusive
+                                                                                            let basePrice = product.unit_price;
+                                                                                            if (product.prices_include_tax) {
+                                                                                                basePrice = product.unit_price / (1 + product.gst_rate / 100);
+                                                                                            }
+
+                                                                                            form.setValue(`items.${index}.unit_price`, parseFloat(basePrice.toFixed(6)));
+
+                                                                                            // Cost Price Logic (Assuming cost is also inclusive if flag is set, though usually cost is distinct. Taking simplification.)
+                                                                                            let baseCost = product.cost_price || 0;
+                                                                                            if (product.prices_include_tax && baseCost > 0) {
+                                                                                                baseCost = baseCost / (1 + product.gst_rate / 100);
+                                                                                            }
+
+                                                                                            form.setValue(`items.${index}.cost_price`, parseFloat(baseCost.toFixed(6)));
                                                                                             form.setValue(`items.${index}.gst_rate`, product.gst_rate);
                                                                                             setOpenProductCombo(null);
                                                                                         }}
@@ -461,6 +485,7 @@ export function NewInvoiceForm({ existingCustomers, inventoryProducts = [] }: Ne
                                                             <FormControl>
                                                                 <Input
                                                                     type="number"
+                                                                    step="0.000001"
                                                                     className="h-9"
                                                                     {...field}
                                                                     onChange={e => field.onChange(parseFloat(e.target.value) || 0)}
@@ -477,8 +502,10 @@ export function NewInvoiceForm({ existingCustomers, inventoryProducts = [] }: Ne
                                                             <FormControl>
                                                                 <Input
                                                                     type="number"
-                                                                    className="h-9 bg-muted/50"
+                                                                    step="0.000001"
+                                                                    className="h-9 bg-muted text-muted-foreground"
                                                                     placeholder="0"
+                                                                    disabled // User requested not editable
                                                                     {...field}
                                                                     value={field.value || ''}
                                                                     onChange={e => field.onChange(parseFloat(e.target.value) || 0)}

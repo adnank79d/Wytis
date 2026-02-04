@@ -147,3 +147,48 @@ export async function getGSTR2Data(month: number, year: number): Promise<GSTRRow
         type: 'Expense'
     }));
 }
+
+export type GSTR3BData = {
+    outwardSupplies: {
+        taxableValue: number;
+        integratedTax: number;
+        centralTax: number;
+        stateTax: number;
+        cess: number;
+    };
+    eligibleITC: {
+        integratedTax: number;
+        centralTax: number;
+        stateTax: number;
+        cess: number;
+    };
+};
+
+export async function getGSTR3BData(month: number, year: number): Promise<GSTR3BData> {
+    const summary = await getGSTSummary(month, year);
+
+    // For now we assume a simple split or just map total tax to integrated/central/state based on some logic?
+    // In a real app we'd check if it's IGST (interstate) or CGST/SGST (intrastate).
+    // For this MVP we will treat 'outputTax' as largely Central+State (50/50) or just Integrated for simplicity, 
+    // BUT since we don't strictly track place of supply in this minimal schema yet, we'll put it all in Integrated Tax to be safe/simple, 
+    // OR split 50/50. Let's split 50/50 for "Intra-state" assumption as default for local businesses.
+
+    const outputTax = summary.outputTax;
+    const inputTax = summary.inputTax;
+
+    return {
+        outwardSupplies: {
+            taxableValue: summary.totalSales,
+            integratedTax: 0,
+            centralTax: outputTax / 2,
+            stateTax: outputTax / 2,
+            cess: 0
+        },
+        eligibleITC: {
+            integratedTax: 0,
+            centralTax: inputTax / 2,
+            stateTax: inputTax / 2,
+            cess: 0
+        }
+    };
+}

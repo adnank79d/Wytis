@@ -31,9 +31,5 @@ export default async function ReportsPage() {
         );
     }
 
-    return (
-        <div className="max-w-7xl mx-auto py-8 px-4">
-            <ReportsView data={reportData} />
-        </div>
-    );
+    return <ReportsView data={reportData} />;
 }

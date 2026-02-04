@@ -37,7 +37,7 @@ export default async function NewInvoicePage() {
                 // Fetch inventory products
                 const { data: products } = await supabase
                     .from('inventory_products')
-                    .select('id, name, sku, unit_price, gst_rate, quantity')
+                    .select('id, name, sku, unit_price, cost_price, gst_rate, quantity, prices_include_tax')
                     .eq('business_id', membership.business_id)
                     .eq('is_active', true)
                     .order('name');

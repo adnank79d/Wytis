@@ -166,6 +166,7 @@ export function InvoiceView({ invoice, business }: InvoiceViewProps) {
             draft: { bg: "bg-slate-100", text: "text-slate-700", label: "Draft" },
             issued: { bg: "bg-blue-100", text: "text-blue-700", label: "Issued" },
             paid: { bg: "bg-emerald-100", text: "text-emerald-700", label: "Paid" },
+            cancelled: { bg: "bg-red-100", text: "text-red-700", label: "Cancelled" },
             voided: { bg: "bg-red-100", text: "text-red-700", label: "Voided" },
         };
         const config = configs[status] || configs.draft;
@@ -176,7 +177,7 @@ export function InvoiceView({ invoice, business }: InvoiceViewProps) {
         );
     };
 
-    const isVoided = invoice.status === 'voided';
+    const isCancelled = invoice.status === 'cancelled' || invoice.status === 'voided';
     const isDraft = invoice.status === 'draft';
     const isIssued = invoice.status === 'issued';
     const isPaid = invoice.status === 'paid';
@@ -223,8 +224,8 @@ export function InvoiceView({ invoice, business }: InvoiceViewProps) {
                         </Button>
                     )}
 
-                    {/* Email & Print (always available except voided) */}
-                    {!isVoided && (
+                    {/* Email & Print (always available except cancelled) */}
+                    {!isCancelled && (
                         <>
                             <Button onClick={handleEmail} variant="outline">
                                 <Mail className="mr-2 h-4 w-4" />
@@ -250,7 +251,7 @@ export function InvoiceView({ invoice, business }: InvoiceViewProps) {
                                 Duplicate
                             </DropdownMenuItem>
 
-                            {isDraft && (
+                            {(isDraft || isCancelled) && (
                                 <>
                                     <DropdownMenuSeparator />
                                     <DropdownMenuItem
@@ -258,12 +259,12 @@ export function InvoiceView({ invoice, business }: InvoiceViewProps) {
                                         className="text-red-600 focus:text-red-600"
                                     >
                                         <Trash2 className="mr-2 h-4 w-4" />
-                                        Delete Draft
+                                        {isCancelled ? "Delete Invoice" : "Delete Draft"}
                                     </DropdownMenuItem>
                                 </>
                             )}
 
-                            {(isIssued || isPaid) && !isVoided && (
+                            {(isIssued || isPaid) && !isCancelled && (
                                 <>
                                     <DropdownMenuSeparator />
                                     <DropdownMenuItem
@@ -280,15 +281,18 @@ export function InvoiceView({ invoice, business }: InvoiceViewProps) {
                 </div>
             </div>
 
-            {/* Voided Warning Banner */}
-            {isVoided && (
+            {/* Cancelled/Voided Warning Banner */}
+            {isCancelled && (
                 <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6 flex items-start gap-3 print:hidden">
                     <AlertTriangle className="h-5 w-5 text-red-600 shrink-0 mt-0.5" />
                     <div>
-                        <p className="font-medium text-red-800">This invoice has been voided</p>
+                        <p className="font-medium text-red-800">This invoice has been cancelled</p>
                         {invoice.void_reason && (
                             <p className="text-sm text-red-700 mt-1">Reason: {invoice.void_reason}</p>
                         )}
+                        <p className="text-xs text-red-600 mt-2">
+                            You can delete this invoice to remove it completely from your records.
+                        </p>
                     </div>
                 </div>
             )}
@@ -296,13 +300,13 @@ export function InvoiceView({ invoice, business }: InvoiceViewProps) {
             {/* Invoice Paper */}
             <Card className={cn(
                 "bg-white text-slate-900 border shadow-sm print:shadow-none print:border-none p-8 md:p-12 min-h-[297mm] mx-auto overflow-hidden print:overflow-visible",
-                isVoided && "opacity-60"
+                isCancelled && "opacity-60"
             )} id="invoice-paper">
-                {/* Voided Watermark */}
-                {isVoided && (
+                {/* Cancelled Watermark */}
+                {isCancelled && (
                     <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                         <span className="text-6xl font-bold text-red-200 transform -rotate-45 uppercase tracking-widest">
-                            VOIDED
+                            CANCELLED
                         </span>
                     </div>
                 )}
@@ -422,7 +426,7 @@ export function InvoiceView({ invoice, business }: InvoiceViewProps) {
             <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Delete Draft Invoice?</AlertDialogTitle>
+                        <AlertDialogTitle>{isCancelled ? "Delete Cancelled Invoice?" : "Delete Draft Invoice?"}</AlertDialogTitle>
                         <AlertDialogDescription>
                             This will permanently delete invoice {invoice.invoice_number}.
                             This action cannot be undone.

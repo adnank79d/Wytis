@@ -1,14 +1,10 @@
-import { Construction } from "lucide-react";
+import { ChatInterface } from "@/components/ai/chat-interface";
 
 export default function AIPage() {
     return (
-        <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-4">
-            <div className="p-4 bg-muted rounded-full">
-                <Construction className="h-8 w-8 text-muted-foreground" />
-            </div>
-            <div>
-                <h1 className="text-2xl font-semibold tracking-tight">AI Assistant</h1>
-                <p className="text-muted-foreground">This module is coming soon.</p>
+        <div className="h-full flex flex-col p-4 md:p-6 lg:p-8 max-h-screen">
+            <div className="flex-1 w-full">
+                <ChatInterface />
             </div>
         </div>
     );
