@@ -98,7 +98,7 @@ export function NewSidebar({ className, isMobile = false, onNavigate }: SidebarP
             {/* Navigation - No ScrollArea, perfect fit */}
             <nav className="flex-1 flex flex-col py-3 px-2">
                 {sidebarGroups.map((group, idx) => (
-                    <div key={group.title} className={cn("flex flex-col", idx > 0 && "mt-4")}>
+                    <div key={group.title} className={cn("flex flex-col", idx > 0 && "mt-6")}>
                         {group.items.map((route) => {
                             const isActive = pathname === route.href || pathname?.startsWith(`${route.href}/`);
 
