@@ -1,5 +1,5 @@
 @import "tailwindcss";
-/* Force cache bust ID: 26 - STABILIZED SIDEBAR V5 */
+/* Force cache bust ID: 27 - STRUCTURAL SIDEBAR V6 */
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
