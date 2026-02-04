@@ -16,7 +16,6 @@ import {
     Contact2,
     Banknote,
     BarChart4,
-    Settings,
 } from "lucide-react";
 import * as React from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -49,12 +48,6 @@ const sidebarGroups = [
             { label: "Payroll", icon: Banknote, href: "/payroll" },
         ]
     },
-    {
-        title: "System",
-        items: [
-            { label: "Settings", icon: Settings, href: "/settings" },
-        ]
-    }
 ];
 
 interface SidebarProps {
