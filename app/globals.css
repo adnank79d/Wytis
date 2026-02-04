@@ -1,5 +1,5 @@
 @import "tailwindcss";
-/* Force cache bust ID: 31 - INCREASED SECTION SPACING (mt-8) */
+/* Force cache bust ID: 32 - SECTION HEADERS ADDED */
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));

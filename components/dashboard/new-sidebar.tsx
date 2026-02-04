@@ -99,6 +99,11 @@ export function NewSidebar({ className, isMobile = false, onNavigate }: SidebarP
             <nav className="flex-1 flex flex-col py-3 px-2">
                 {sidebarGroups.map((group, idx) => (
                     <div key={group.title} className={cn("flex flex-col", idx > 0 && "mt-8")}>
+                        {!effectiveCollapsed && (
+                            <h4 className="px-3 pb-2 text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider">
+                                {group.title}
+                            </h4>
+                        )}
                         {group.items.map((route) => {
                             const isActive = pathname === route.href || pathname?.startsWith(`${route.href}/`);
 
