@@ -98,6 +98,7 @@ export function Sidebar({ className, isMobile = false, onNavigate }: SidebarProp
                 isMobile && "border-none w-full",
                 className
             )}
+            data-version="dense-spacing-v2"
         >
             {/* Mobile Header - only show if not in sheet */}
             {!isMobile && (
