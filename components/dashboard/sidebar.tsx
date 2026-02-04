@@ -22,9 +22,7 @@ import * as React from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 // --- Configuration ---
-const SIDEBAR_WIDTH = "w-64";
-const SIDEBAR_WIDTH_COLLAPSED = "w-[70px]";
-const SIDEBAR_ANIMATION = "transition-all duration-300 ease-in-out";
+const SIDEBAR_ANIMATION = "transition-all duration-200 ease-in-out";
 
 const sidebarGroups = [
     {
@@ -64,7 +62,7 @@ interface SidebarProps {
 
 export function Sidebar({ className, isMobile = false, onNavigate }: SidebarProps) {
     const pathname = usePathname();
-    const [isCollapsed, setIsCollapsed] = React.useState(!isMobile); // Default collapsed on desktop
+    const [isCollapsed, setIsCollapsed] = React.useState(!isMobile);
     const [isMounted, setIsMounted] = React.useState(false);
 
     React.useEffect(() => {
@@ -74,7 +72,6 @@ export function Sidebar({ className, isMobile = false, onNavigate }: SidebarProp
         }
     }, [isMobile]);
 
-    // Auto-collapse logic
     const handleMouseEnter = () => {
         if (!isMobile) setIsCollapsed(false);
     };
@@ -83,11 +80,10 @@ export function Sidebar({ className, isMobile = false, onNavigate }: SidebarProp
         if (!isMobile) setIsCollapsed(true);
     };
 
-    // For mobile, never collapse (it's in a sheet)
     const effectiveCollapsed = isMobile ? false : isCollapsed;
 
     if (!isMounted) {
-        return <div className={cn("border-r bg-background flex flex-col h-full", SIDEBAR_WIDTH_COLLAPSED, className)} />;
+        return <div className={cn("border-r bg-sidebar flex flex-col h-full w-[70px]", className)} />;
     }
 
     return (
@@ -95,18 +91,18 @@ export function Sidebar({ className, isMobile = false, onNavigate }: SidebarProp
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
             className={cn(
-                "flex flex-col h-full bg-background border-r relative z-20",
+                "flex flex-col h-full bg-sidebar border-r border-sidebar-border relative z-20 text-sidebar-foreground",
                 SIDEBAR_ANIMATION,
-                effectiveCollapsed ? SIDEBAR_WIDTH_COLLAPSED : SIDEBAR_WIDTH,
+                effectiveCollapsed ? "w-[70px]" : "w-64",
                 isMobile && "w-full border-none",
                 className
             )}
-            data-version="redesign-v3"
+            data-version="premium-v4"
         >
             {/* Mobile Header */}
             {!isMobile && (
                 <div className={cn(
-                    "flex items-center h-14 px-4 border-b lg:hidden",
+                    "flex items-center h-14 px-4 lg:hidden border-b border-sidebar-border",
                     effectiveCollapsed ? "justify-center" : "justify-between"
                 )}>
                     <span className={cn("font-semibold tracking-tight", effectiveCollapsed && "hidden")}>Menu</span>
@@ -116,17 +112,17 @@ export function Sidebar({ className, isMobile = false, onNavigate }: SidebarProp
             {/* Scrollable Navigation Area */}
             <div className="flex-1 overflow-hidden flex flex-col min-h-0">
                 <ScrollArea className="flex-1">
-                    <div className={cn("flex flex-col gap-6 py-6", isMobile ? "px-4" : "px-3")}>
+                    <div className={cn("flex flex-col gap-6 py-4", isMobile ? "px-4" : "px-3")}>
                         {sidebarGroups.map((group, groupIndex) => (
-                            <div key={group.title} className="flex flex-col gap-2">
-                                {/* Group Title - Hidden when collapsed */}
+                            <div key={group.title} className="flex flex-col gap-1">
+                                {/* Group Title */}
                                 {!effectiveCollapsed && (
-                                    <h4 className="px-2 text-xs font-semibold text-muted-foreground/70 uppercase tracking-wider">
+                                    <h4 className="px-2 py-1 text-xs font-medium text-muted-foreground/60 uppercase tracking-widest">
                                         {group.title}
                                     </h4>
                                 )}
 
-                                <div className="flex flex-col gap-1">
+                                <div className="flex flex-col gap-[2px]">
                                     {group.items.map((route) => {
                                         const isActive = pathname === route.href || pathname?.startsWith(`${route.href}/`);
 
@@ -136,31 +132,25 @@ export function Sidebar({ className, isMobile = false, onNavigate }: SidebarProp
                                                 href={route.href}
                                                 onClick={onNavigate}
                                                 className={cn(
-                                                    "flex items-center rounded-md text-sm font-medium transition-colors",
+                                                    "flex items-center rounded-md text-sm font-medium transition-all group/item",
                                                     SIDEBAR_ANIMATION,
-                                                    // Spacing & Sizing
-                                                    effectiveCollapsed ? "justify-center px-2 py-2" : "px-3 py-2 gap-3",
-                                                    // Colors & States
+                                                    effectiveCollapsed ? "justify-center px-2 py-2.5" : "px-3 py-2 gap-3",
                                                     isActive
-                                                        ? "bg-primary/10 text-primary"
-                                                        : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                                                        ? "bg-sidebar-accent text-sidebar-primary shadow-sm ring-1 ring-inset ring-sidebar-border/50"
+                                                        : "text-muted-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-foreground",
                                                 )}
                                                 title={effectiveCollapsed ? route.label : undefined}
                                             >
                                                 <route.icon className={cn(
-                                                    "shrink-0",
+                                                    "shrink-0 transition-colors",
                                                     isMobile ? "h-5 w-5" : "h-4 w-4",
+                                                    isActive ? "text-sidebar-primary" : "text-muted-foreground group-hover/item:text-sidebar-foreground"
                                                 )} />
 
                                                 {!effectiveCollapsed && (
                                                     <span className="truncate">
                                                         {route.label}
                                                     </span>
-                                                )}
-
-                                                {/* Active Indicator (optional, subtle border instead of dot) */}
-                                                {isActive && effectiveCollapsed && (
-                                                    <div className="absolute left-0 top-1/2 -translate-y-1/2 h-8 w-1 bg-primary rounded-r-md" />
                                                 )}
                                             </Link>
                                         );
@@ -174,26 +164,28 @@ export function Sidebar({ className, isMobile = false, onNavigate }: SidebarProp
 
             {/* Pinned Footer (Settings) */}
             <div className={cn(
-                "border-t bg-background p-3 mt-auto",
-                // Safe area padding for mobile
+                "p-3 mt-auto border-t border-sidebar-border bg-sidebar",
                 isMobile && "pb-8"
             )}>
                 <Link
                     href="/settings"
                     onClick={onNavigate}
                     className={cn(
-                        "flex items-center rounded-md text-sm font-medium transition-colors",
+                        "flex items-center rounded-md text-sm font-medium transition-all group/item",
                         SIDEBAR_ANIMATION,
-                        effectiveCollapsed ? "justify-center px-2 py-2" : "px-3 py-2 gap-3",
+                        effectiveCollapsed ? "justify-center px-2 py-2.5" : "px-3 py-2 gap-3",
                         (pathname === "/settings" || pathname?.startsWith("/settings/"))
-                            ? "bg-primary/10 text-primary"
-                            : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                            ? "bg-sidebar-accent text-sidebar-primary shadow-sm"
+                            : "text-muted-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
                     )}
                     title="Settings"
                 >
                     <Settings className={cn(
-                        "shrink-0",
+                        "shrink-0 transition-colors",
                         isMobile ? "h-5 w-5" : "h-4 w-4",
+                        (pathname === "/settings" || pathname?.startsWith("/settings/"))
+                            ? "text-sidebar-primary"
+                            : "text-muted-foreground group-hover/item:text-sidebar-foreground"
                     )} />
 
                     {!effectiveCollapsed && (
