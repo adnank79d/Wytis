@@ -82,11 +82,18 @@ export function NewSidebar({ className, isMobile = false, onNavigate }: SidebarP
                     {sidebarGroups.map((group, groupIdx) => (
                         <div key={groupIdx}>
                             {/* Section Header */}
-                            {isExpanded && group.title && (
-                                <div className="px-3 mb-1.5 mt-1">
-                                    <h4 className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider">
-                                        {group.title}
-                                    </h4>
+                            {group.title && (
+                                <div className={cn(
+                                    "mb-1.5 mt-1",
+                                    isExpanded ? "px-3" : "flex justify-center px-3"
+                                )}>
+                                    {isExpanded ? (
+                                        <h4 className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider">
+                                            {group.title}
+                                        </h4>
+                                    ) : (
+                                        <div className="w-8 h-px bg-border" />
+                                    )}
                                 </div>
                             )}
 
