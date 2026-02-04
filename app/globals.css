@@ -1,5 +1,5 @@
 @import "tailwindcss";
-/* Force cache bust ID: 22 */
+/* Force cache bust ID: 23 - DENSE SPACING UPDATE */
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
