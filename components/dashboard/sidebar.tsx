@@ -51,12 +51,6 @@ const sidebarGroups = [
             { label: "Payroll", icon: Banknote, href: "/payroll" },
         ]
     },
-    {
-        title: "System",
-        items: [
-            { label: "Settings", icon: Settings, href: "/settings" },
-        ]
-    }
 ];
 
 interface SidebarProps {
@@ -169,6 +163,40 @@ export function Sidebar({ className, isMobile = false, onNavigate }: SidebarProp
                 </div>
             </ScrollArea>
 
-        </div >
+            {/* Pinned Bottom Section */}
+            <div className="p-3 border-t bg-background/50 backdrop-blur-sm">
+                <Link
+                    href="/settings"
+                    onClick={onNavigate}
+                    className={cn(
+                        "flex items-center rounded-md font-medium transition-all duration-200 relative group/link text-sm",
+                        effectiveCollapsed ? "gap-0 justify-center px-2" : "gap-3 pl-[15px] pr-3",
+                        isMobile ? "px-3 py-3" : "py-2.5",
+                        pathname === "/settings" || pathname?.startsWith("/settings/") ? "text-primary" : "text-muted-foreground hover:text-foreground"
+                    )}
+                    title="Settings"
+                >
+                    {(pathname === "/settings" || pathname?.startsWith("/settings/")) && <div className={cn("absolute left-0 top-1/2 -translate-y-1/2 bg-primary rounded-r-full", isMobile ? "w-1 h-6" : "w-0.5 h-4 -ml-2")} />}
+                    <Settings className={cn(
+                        "shrink-0 transition-transform duration-300",
+                        isMobile ? "h-5 w-5" : "h-4 w-4",
+                        (pathname === "/settings" || pathname?.startsWith("/settings/")) && "text-primary"
+                    )} />
+                    <span
+                        style={{
+                            transition: effectiveCollapsed
+                                ? 'opacity 100ms ease-out, transform 100ms ease-out'
+                                : 'opacity 150ms ease-out 50ms, transform 150ms ease-out 50ms'
+                        }}
+                        className={cn(
+                            "truncate whitespace-nowrap",
+                            effectiveCollapsed ? "opacity-0 scale-95 w-0 overflow-hidden" : "opacity-100 scale-100"
+                        )}
+                    >
+                        Settings
+                    </span>
+                </Link>
+            </div>
+        </div>
     );
 }
