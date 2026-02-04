@@ -1,0 +1,14 @@
+--- CHECKING INVOICES ---
+Count: 2
+[issued] INV-404824: 223
+[issued] INV-000001: 118
+
+--- CHECKING P&L ---
+Income | Sales: 100
+Expense | Utilities: -250
+Income | Sales: 200
+
+--- CHECKING GST PAYABLE LEDGER ---
+Entry: +23 -0
+Entry: +18 -0
+Final GST Balance: 41

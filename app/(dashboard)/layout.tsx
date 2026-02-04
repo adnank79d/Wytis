@@ -1,9 +1,10 @@
 import { Header } from "@/components/dashboard/header";
-import { Sidebar } from "@/components/dashboard/sidebar";
+import { ClientSidebarWrapper } from "@/components/dashboard/client-sidebar-wrapper";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { TrialBanner } from "@/components/dashboard/trial-banner";
 import { Role } from "@/lib/permissions";
+import { cookies } from "next/headers";
 
 export default async function DashboardLayout({
     children,
@@ -69,7 +70,7 @@ export default async function DashboardLayout({
     const userName = user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0];
 
     return (
-        <div className="flex flex-col h-screen overflow-hidden bg-muted/5">
+        <div className="fixed inset-0 flex flex-col overflow-hidden bg-muted/5">
             {/* 1. Header (Fixed top) */}
             <Header
                 userRole={userRole}
@@ -79,9 +80,11 @@ export default async function DashboardLayout({
             />
 
             {/* 2. Main Layout (Flex Row) */}
-            <div className="flex flex-1 overflow-hidden">
+            <div className="flex flex-1 overflow-hidden min-h-0">
                 {/* Desktop Sidebar (Hidden on mobile) */}
-                <Sidebar className="hidden md:flex" />
+                <ClientSidebarWrapper
+                    className="hidden md:flex"
+                />
 
                 {/* Main Content Area */}
                 <main className="flex-1 flex flex-col w-full overflow-hidden">
@@ -96,7 +99,7 @@ export default async function DashboardLayout({
                     )}
 
                     {/* Scrollable Page Content */}
-                    <div className="flex-1 overflow-y-auto p-3 md:p-4 lg:p-8 w-full">
+                    <div className="flex-1 overflow-y-auto w-full">
                         <div className="max-w-7xl mx-auto w-full">
                             {children}
                         </div>

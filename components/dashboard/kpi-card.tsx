@@ -46,44 +46,45 @@ export function KpiCard({
 
     return (
         <Card className={cn(
-            "rounded-xl md:rounded-2xl border border-border/40 bg-card relative overflow-hidden group",
-            "shadow-sm hover:shadow-md transition-all duration-300 ease-out",
-            "hover:border-border/60 hover:translate-y-[-2px]",
+            "rounded-xl border border-border/60 bg-card relative overflow-hidden group",
+            "shadow-sm transition-all duration-300",
+            "hover:border-primary/40 hover:shadow-md",
             className
         )}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-0.5 relative z-10 px-3 md:px-5 pt-3 md:pt-5">
-                <CardTitle className="text-[10px] md:text-xs font-medium text-muted-foreground/80 tracking-wide uppercase">
+            {/* Tactical Grid Background */}
+            <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:14px_14px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] pointer-events-none" />
+
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10 px-4 md:px-5 pt-4 md:pt-5">
+                <CardTitle className="text-[10px] md:text-xs font-semibold text-muted-foreground uppercase tracking-widest font-mono">
                     {label}
                 </CardTitle>
                 {Icon && (
-                    <div className="h-7 w-7 md:h-9 md:w-9 rounded-lg md:rounded-xl bg-primary/5 flex items-center justify-center group-hover:bg-primary/10 transition-colors">
-                        <Icon className="h-3.5 w-3.5 md:h-5 md:w-5 text-primary/70 group-hover:text-primary transition-colors" />
+                    <div className="h-7 w-7 md:h-8 md:w-8 rounded-md bg-muted/50 border border-border/50 flex items-center justify-center group-hover:bg-primary/10 group-hover:border-primary/20 transition-all">
+                        <Icon className="h-3.5 w-3.5 md:h-4 md:w-4 text-muted-foreground group-hover:text-primary transition-colors" />
                     </div>
                 )}
             </CardHeader>
-            <CardContent className="relative z-10 px-3 md:px-5 pb-3 md:pb-5 pt-1.5">
-                <div className="text-xl md:text-3xl font-bold text-foreground tracking-tight">
+            <CardContent className="relative z-10 px-4 md:px-5 pb-4 md:pb-5">
+                <div className="text-xl md:text-3xl font-bold text-foreground tracking-tight font-mono tabular-nums">
                     {value}
                 </div>
                 {trend !== undefined && (
-                    <div className={cn(
-                        "flex items-center text-[10px] md:text-sm font-medium mt-1.5",
-                        isPositive ? "text-emerald-600" : "text-rose-500"
-                    )}>
-                        <span className={cn(
-                            "inline-flex items-center gap-0.5 px-1 md:px-1.5 py-0.5 rounded text-[10px] font-semibold",
-                            isPositive ? "bg-emerald-50 dark:bg-emerald-950/30" : "bg-rose-50 dark:bg-rose-950/30"
+                    <div className="flex items-center gap-2 mt-2">
+                        <div className={cn(
+                            "flex items-center text-[10px] md:text-xs font-mono font-medium px-1.5 py-0.5 rounded-sm border",
+                            isPositive
+                                ? "text-emerald-600 bg-emerald-50/50 border-emerald-200 dark:bg-emerald-950/20 dark:border-emerald-900/50"
+                                : "text-rose-600 bg-rose-50/50 border-rose-200 dark:bg-rose-950/20 dark:border-rose-900/50"
                         )}>
-                            {isPositive ? <ArrowUpRight className="h-2.5 w-2.5 md:h-3 md:w-3" /> : <ArrowDownRight className="h-2.5 w-2.5 md:h-3 md:w-3" />}
+                            {isPositive ? <ArrowUpRight className="h-3 w-3 mr-0.5" /> : <ArrowDownRight className="h-3 w-3 mr-0.5" />}
                             {Math.abs(trend)}%
-                        </span>
-                        <span className="text-muted-foreground/60 ml-1.5 text-[10px] font-normal hidden md:inline">
-                            vs last month
-                        </span>
+                        </div>
+                        <span className="text-[10px] text-muted-foreground/60 uppercase tracking-wide">vs last month</span>
                     </div>
                 )}
                 {!trend && caption && (
-                    <p className="text-[10px] md:text-xs text-muted-foreground/70 mt-1.5 font-medium">
+                    <p className="text-[10px] md:text-xs text-muted-foreground/70 mt-2 font-medium flex items-center gap-1.5">
+                        <span className="h-1 w-1 rounded-full bg-primary/50" />
                         {caption}
                     </p>
                 )}
@@ -91,8 +92,8 @@ export function KpiCard({
 
             {/* Background Chart with Gradient */}
             {chartData && (
-                <div className="absolute bottom-0 left-0 right-0 opacity-30 group-hover:opacity-50 transition-opacity duration-300">
-                    <TrendChart data={chartData} color={chartColor} height={60} />
+                <div className="absolute bottom-0 left-0 right-0 opacity-20 group-hover:opacity-40 transition-opacity duration-300 pointer-events-none">
+                    <TrendChart data={chartData} color={chartColor} height={50} />
                 </div>
             )}
         </Card>

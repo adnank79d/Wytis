@@ -63,13 +63,13 @@ export function SearchBar() {
         <>
             <Button
                 variant="outline"
-                className="relative h-9 w-full justify-start rounded-[0.5rem] bg-background text-sm font-normal text-muted-foreground shadow-none sm:pr-12 md:w-56 lg:w-72"
+                className="relative h-10 w-full justify-start rounded-full bg-secondary/30 border border-border/50 text-sm font-normal text-muted-foreground shadow-sm hover:bg-secondary/50 hover:text-foreground hover:border-border/80 transition-all sm:pr-12"
                 onClick={() => setOpen(true)}
             >
-                <Search className="mr-2 h-4 w-4" />
-                <span className="hidden lg:inline-flex">Search...</span>
+                <Search className="mr-2 h-4 w-4 opacity-50" />
+                <span className="hidden lg:inline-flex truncate">Search clients, invoices...</span>
                 <span className="inline-flex lg:hidden">Search...</span>
-                <kbd className="pointer-events-none absolute right-[0.3rem] top-[0.3rem] hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
+                <kbd className="pointer-events-none absolute right-[0.4rem] top-[0.4rem] hidden h-6 select-none items-center gap-1 rounded-full border border-border/50 bg-background/50 px-2 font-mono text-[10px] font-medium opacity-100 sm:flex text-muted-foreground">
                     <span className="text-xs">⌘</span>K
                 </kbd>
             </Button>

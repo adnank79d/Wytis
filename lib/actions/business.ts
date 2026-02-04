@@ -77,11 +77,14 @@ export async function createBusiness(prevState: CreateBusinessState, formData: F
     redirect('/dashboard');
 }
 
+const UpdateBusinessSchema = CreateBusinessSchema.partial();
+
 export type UpdateBusinessState = {
     errors?: {
         name?: string[];
         gst_number?: string[];
         address_line1?: string[];
+        address_line2?: string[];
         city?: string[];
         state?: string[];
         pincode?: string[];
@@ -112,21 +115,17 @@ export async function updateBusiness(prevState: UpdateBusinessState, formData: F
         return { message: 'Unauthorized: Only owners can update business settings.' };
     }
 
-    // 2. Validate (Refine existing schema or reuse)
-    // Note: Reusing CreateBusinessSchema might be strict on required fields if we want partial updates,
-    // but for a full profile update form, it's fine.
-    // For now I'll manually parse or reuse the schema defined in this file.
-    // Let's assume CreateBusinessSchema is available in scope (it is).
+    // 2. Validate using Partial Schema
+    const rawData: Record<string, any> = {};
+    if (formData.has('name')) rawData.name = formData.get('name');
+    if (formData.has('gst_number')) rawData.gst_number = formData.get('gst_number');
+    if (formData.has('address_line1')) rawData.address_line1 = formData.get('address_line1');
+    if (formData.has('address_line2')) rawData.address_line2 = formData.get('address_line2');
+    if (formData.has('city')) rawData.city = formData.get('city');
+    if (formData.has('state')) rawData.state = formData.get('state');
+    if (formData.has('pincode')) rawData.pincode = formData.get('pincode');
 
-    const validatedFields = CreateBusinessSchema.safeParse({
-        name: formData.get('name'),
-        gst_number: formData.get('gst_number') || undefined,
-        address_line1: formData.get('address_line1') || undefined,
-        address_line2: formData.get('address_line2') || undefined,
-        city: formData.get('city') || undefined,
-        state: formData.get('state') || undefined,
-        pincode: formData.get('pincode') || undefined,
-    });
+    const validatedFields = UpdateBusinessSchema.safeParse(rawData);
 
     if (!validatedFields.success) {
         return {
@@ -135,20 +134,14 @@ export async function updateBusiness(prevState: UpdateBusinessState, formData: F
         };
     }
 
-    const { name, gst_number, address_line1, address_line2, city, state, pincode } = validatedFields.data;
+    // 3. Update only present fields
+    if (Object.keys(validatedFields.data).length === 0) {
+        return { message: 'No changes detected.' };
+    }
 
-    // 3. Update
     const { error } = await supabase
         .from('businesses')
-        .update({
-            name,
-            gst_number,
-            address_line1,
-            address_line2,
-            city,
-            state,
-            pincode
-        })
+        .update(validatedFields.data)
         .eq('id', businessId);
 
     if (error) {
@@ -156,6 +149,6 @@ export async function updateBusiness(prevState: UpdateBusinessState, formData: F
     }
 
     revalidatePath('/dashboard/settings');
-    return { message: 'Success: Business profile updated.' };
+    revalidatePath('/dashboard/settings/gst');
+    return { message: 'Success: Settings updated.' };
 }
-

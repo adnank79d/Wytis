@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { AddProductForm } from "./add-product-form";
+import { ProductForm } from "../_components/product-form";
 import { getCategories } from "@/lib/actions/inventory";
 
 export default async function NewProductPage() {
@@ -59,7 +59,7 @@ export default async function NewProductPage() {
                 </p>
             </div>
 
-            <AddProductForm categories={categories || []} />
+            <ProductForm categories={categories || []} />
         </div>
     );
 }

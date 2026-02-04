@@ -1,172 +1,77 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import { Card, CardContent } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { InviteMemberDialog } from "@/components/settings/invite-member-dialog";
+import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
-import {
-    ShieldCheck,
-    User,
-    Calculator,
-    MoreHorizontal,
-    Users,
-    UserPlus,
-    Mail
-} from "lucide-react";
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { Plus } from "lucide-react";
 
-export default async function TeamSettingsPage() {
+export default async function SettingsTeamPage() {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) redirect("/login");
 
-    const { data: membership } = await supabase
+
+    // 1. Get the current user's business context (assuming single business for now)
+    const { data: businessMembership } = await supabase
         .from("memberships")
-        .select("business_id, role")
+        .select("business_id")
         .eq("user_id", user.id)
         .limit(1)
         .single();
 
-    if (!membership) redirect("/onboarding");
+    if (!businessMembership) redirect("/onboarding");
 
-    const isOwner = membership.role === 'owner';
-
-    const { data: members } = await supabase
+    // 2. Fetch all members of this specific business
+    const { data: memberships } = await supabase
         .from("memberships")
         .select("*, users(email)")
-        .eq("business_id", membership.business_id);
-
-    const getRoleIcon = (role: string) => {
-        switch (role) {
-            case 'owner': return <ShieldCheck className="h-3 w-3" />;
-            case 'accountant': return <Calculator className="h-3 w-3" />;
-            default: return <User className="h-3 w-3" />;
-        }
-    };
-
-    const getRoleBadgeStyle = (role: string) => {
-        switch (role) {
-            case 'owner':
-                return "bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-950/30 dark:text-indigo-400";
-            case 'accountant':
-                return "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-400";
-            default:
-                return "bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-300";
-        }
-    };
+        .eq("business_id", businessMembership.business_id)
+        .limit(20);
 
     return (
-        <div className="space-y-4 md:space-y-6">
-            {/* Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 md:gap-4">
-                <div className="space-y-0.5">
-                    <h3 className="text-base md:text-lg font-semibold flex items-center gap-2">
-                        <Users className="h-4 w-4 md:h-5 md:w-5 text-primary" />
-                        Team Members
-                    </h3>
-                    <p className="text-xs md:text-sm text-muted-foreground">
-                        Manage who has access to your workspace.
+        <div className="space-y-6">
+            <div className="flex items-center justify-between">
+                <div>
+                    <h3 className="text-lg font-medium">Users & Roles</h3>
+                    <p className="text-sm text-muted-foreground">
+                        Manage access to your business workspace.
                     </p>
                 </div>
-                {isOwner && <InviteMemberDialog />}
+                <Button size="sm" className="gap-2">
+                    <Plus className="h-4 w-4" />
+                    Invite User
+                </Button>
             </div>
+            <Separator />
 
-            {/* Members List */}
-            <div className="space-y-2 md:space-y-3">
-                {members?.map((member) => {
-                    const email = (member.users as any)?.email || 'Unknown';
-                    const initial = email.charAt(0).toUpperCase();
-
-                    return (
-                        <Card
-                            key={member.id}
-                            className="rounded-xl md:rounded-2xl border border-border/40 shadow-sm hover:shadow-md transition-all duration-300"
-                        >
-                            <CardContent className="p-3 md:p-5">
-                                <div className="flex items-center justify-between gap-3">
-                                    <div className="flex items-center gap-3 md:gap-4 min-w-0 flex-1">
-                                        <Avatar className="h-10 w-10 md:h-12 md:w-12 border border-border/50">
-                                            <AvatarImage src="" />
-                                            <AvatarFallback className="bg-primary/10 text-primary font-bold text-sm md:text-base">
-                                                {initial}
-                                            </AvatarFallback>
-                                        </Avatar>
-                                        <div className="min-w-0 flex-1">
-                                            <div className="flex items-center gap-2 flex-wrap">
-                                                <p className="font-semibold text-sm md:text-base text-foreground truncate">
-                                                    {email}
-                                                </p>
-                                                <Badge
-                                                    variant="secondary"
-                                                    className={`capitalize text-[10px] md:text-xs font-medium shrink-0 ${getRoleBadgeStyle(member.role)}`}
-                                                >
-                                                    {getRoleIcon(member.role)}
-                                                    <span className="ml-1">{member.role}</span>
-                                                </Badge>
-                                            </div>
-                                            <p className="text-[10px] md:text-xs text-muted-foreground mt-0.5 flex items-center gap-1">
-                                                <Mail className="h-3 w-3" />
-                                                Joined {new Date(member.created_at).toLocaleDateString('en-IN', {
-                                                    day: 'numeric',
-                                                    month: 'short',
-                                                    year: 'numeric'
-                                                })}
-                                            </p>
-                                        </div>
-                                    </div>
-
-                                    {isOwner && member.role !== 'owner' && (
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                                <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
-                                                    <MoreHorizontal className="h-4 w-4" />
-                                                </Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end">
-                                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                                <DropdownMenuSeparator />
-                                                <DropdownMenuItem>Change Role</DropdownMenuItem>
-                                                <DropdownMenuItem className="text-red-600 focus:text-red-600">
-                                                    Remove Member
-                                                </DropdownMenuItem>
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
-                                    )}
-                                </div>
-                            </CardContent>
-                        </Card>
-                    );
-                })}
-            </div>
-
-            {/* Empty State */}
-            {(!members || members.length <= 1) && (
-                <Card className="rounded-xl md:rounded-2xl border-2 border-dashed border-border/40">
-                    <CardContent className="flex flex-col items-center justify-center py-8 md:py-12 text-center">
-                        <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center mb-4">
-                            <UserPlus className="h-6 w-6 text-muted-foreground" />
+            <div className="border rounded-md divide-y">
+                <div className="flex items-center px-6 py-3 bg-muted/40 text-xs font-medium text-muted-foreground">
+                    <div className="flex-1 px-2">User</div>
+                    <div className="w-32 px-2">Role</div>
+                    <div className="w-24 px-2 text-right">Status</div>
+                </div>
+                {memberships?.map((member: any) => (
+                    <div key={member.id} className="flex items-center px-6 py-3 text-sm">
+                        <div className="flex-1 px-2">
+                            <div className="font-medium text-foreground">{member.users?.email}</div>
                         </div>
-                        <h3 className="text-sm md:text-base font-semibold">No other team members</h3>
-                        <p className="text-xs md:text-sm text-muted-foreground mt-1 max-w-xs">
-                            Invite team members to collaborate on your workspace.
-                        </p>
-                        {isOwner && (
-                            <div className="mt-4">
-                                <InviteMemberDialog />
-                            </div>
-                        )}
-                    </CardContent>
-                </Card>
-            )}
+                        <div className="w-32 px-2 capitalize text-muted-foreground">
+                            {member.role}
+                        </div>
+                        <div className="w-24 px-2 text-right">
+                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                                Active
+                            </span>
+                        </div>
+                    </div>
+                ))}
+                {/* Empty state or "More" placeholder if needed */}
+                {(!memberships || memberships.length === 0) && (
+                    <div className="p-8 text-center text-muted-foreground text-sm">
+                        No team members found.
+                    </div>
+                )}
+            </div>
         </div>
     );
 }

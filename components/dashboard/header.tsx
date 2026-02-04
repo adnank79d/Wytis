@@ -4,7 +4,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { LogOut, Settings, Menu } from "lucide-react";
+import { LogOut, Settings, Menu, MessageSquare } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -14,6 +14,15 @@ import { NotificationsPopover } from "@/components/dashboard/notifications-popov
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Sidebar } from "@/components/dashboard/sidebar";
 import { SearchBar } from "@/components/dashboard/search-bar";
+import { DateTimeDisplay } from "@/components/dashboard/date-time-display";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 
 interface HeaderProps {
@@ -52,19 +61,30 @@ export function Header({ userRole, businessName, userEmail, userName }: HeaderPr
 
     return (
         <header className="w-full h-14 md:h-16 border-b border-border/40 bg-background/95 backdrop-blur-xl supports-[backdrop-filter]:bg-background/80 flex items-center justify-between px-4 md:px-5 lg:px-6 sticky top-0 z-30 shrink-0 transition-all duration-300">
-            {/* 1. LEFT SECTION: Logo + Mobile Toggle */}
+            {/* 1. LEFT SECTION: Logo + Feedback + Mobile Toggle */}
             <div className="flex items-center gap-2 md:gap-4 min-w-0 md:min-w-[200px]">
                 {/* Logo - visible on both mobile and desktop */}
                 <Link href="/dashboard" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
                     <Image
                         src="/logo.png"
                         alt="Wytis"
-                        width={100}
-                        height={32}
-                        className="h-5 md:h-6 w-auto object-contain"
+                        width={120}
+                        height={40}
+                        className="h-7 md:h-8 w-auto object-contain"
                         priority
                     />
                 </Link>
+
+                {/* Feedback Button - Hidden on mobile */}
+                <Button
+                    variant="outline"
+                    size="sm"
+                    className="hidden md:flex items-center gap-1.5 h-8 px-3 text-xs font-medium rounded-lg border-border/60 hover:border-primary/50 hover:bg-primary/5 hover:text-primary transition-all"
+                    onClick={() => window.open('https://forms.gle/your-feedback-form-id', '_blank')}
+                >
+                    <MessageSquare className="h-3.5 w-3.5" />
+                    <span>Feedback</span>
+                </Button>
 
                 {/* Mobile Sidebar Trigger */}
                 <Sheet>
@@ -87,14 +107,19 @@ export function Header({ userRole, businessName, userEmail, userName }: HeaderPr
                                 />
                             </Link>
                         </div>
-                        <Sidebar isMobile={true} className="border-none" />
+                        <Sidebar
+                            isMobile={true}
+                            className="border-none"
+                        />
                     </SheetContent>
                 </Sheet>
             </div>
 
-            {/* 2. CENTER SECTION: Global Search - Hidden on mobile */}
-            <div className="hidden md:flex flex-1 justify-center max-w-xl mx-auto px-6">
-                <SearchBar />
+            {/* 2. CENTER SECTION: Global Search - Hidden on mobile, Absolute Center on Desktop */}
+            <div className="hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-xl justify-center px-4 pointer-events-none">
+                <div className="pointer-events-auto w-full max-w-sm lg:max-w-md">
+                    <SearchBar />
+                </div>
             </div>
 
             {/* 3. RIGHT SECTION: Business & User */}
@@ -106,45 +131,51 @@ export function Header({ userRole, businessName, userEmail, userName }: HeaderPr
                     </div>
                 )}
 
+                {/* Date & Time - Desktop Only */}
+                <div className="hidden lg:block">
+                    <DateTimeDisplay />
+                </div>
+
                 <NotificationsPopover />
 
-                {/* User Menu Custom Implementation */}
-                <div className="relative" ref={menuRef}>
-                    <Button
-                        variant="ghost"
-                        className="relative h-7 w-7 md:h-8 md:w-8 rounded-full ring-2 ring-transparent hover:ring-primary/20 transition-all"
-                        onClick={() => setIsMenuOpen(!isMenuOpen)}
-                    >
-                        <Avatar className="h-7 w-7 md:h-8 md:w-8 border">
-                            <AvatarImage src="" alt="@user" />
-                            <AvatarFallback className="bg-primary/5 text-[10px] md:text-xs text-primary font-bold">{userInitials}</AvatarFallback>
-                        </Avatar>
-                    </Button>
-
-                    {isMenuOpen && (
-                        <div className="absolute right-0 mt-2 w-56 rounded-lg border bg-popover/95 backdrop-blur shadow-lg p-1 z-50 animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 duration-200">
-                            <div className="px-2 py-1.5 text-sm font-semibold">
-                                <p className="text-sm font-medium leading-none">{userName || "Account"}</p>
-                                <p className="text-xs leading-none text-muted-foreground mt-1 truncate">
+                {/* User Menu Dropdown */}
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="relative h-9 w-9 rounded-full ml-1">
+                            <Avatar className="h-9 w-9 border border-border/40 transition-all hover:border-primary/50">
+                                <AvatarImage src="" alt={userName || "User"} />
+                                <AvatarFallback className="bg-primary/10 text-sm text-primary font-semibold">
+                                    {userInitials}
+                                </AvatarFallback>
+                            </Avatar>
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="w-56" align="end" forceMount>
+                        <DropdownMenuLabel className="font-normal">
+                            <div className="flex flex-col space-y-1">
+                                <p className="text-sm font-medium leading-none">{userName || "My Account"}</p>
+                                <p className="text-xs leading-none text-muted-foreground">
                                     {userEmail}
                                 </p>
                             </div>
-                            <div className="h-px bg-muted my-1" />
-                            <Link href="/settings" className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent hover:text-accent-foreground" onClick={() => setIsMenuOpen(false)}>
+                        </DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem asChild>
+                            <Link href="/settings" className="cursor-pointer">
                                 <Settings className="mr-2 h-4 w-4" />
                                 <span>Settings</span>
                             </Link>
-                            <div className="h-px bg-muted my-1" />
-                            <button
-                                onClick={handleSignOut}
-                                className="relative flex w-full cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-red-50 text-red-600 hover:text-red-700 font-medium"
-                            >
-                                <LogOut className="mr-2 h-4 w-4" />
-                                <span>Log out</span>
-                            </button>
-                        </div>
-                    )}
-                </div>
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                            className="text-red-600 focus:text-red-600 cursor-pointer"
+                            onClick={handleSignOut}
+                        >
+                            <LogOut className="mr-2 h-4 w-4" />
+                            <span>Log out</span>
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
             </div>
         </header>
     );

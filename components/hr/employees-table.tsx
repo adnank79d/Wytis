@@ -97,27 +97,31 @@ export function EmployeesTable({ employees }: EmployeesTableProps) {
     return (
         <div className="space-y-4">
             {/* Toolbar */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-between">
-                <div className="flex items-center gap-2 flex-1">
+            <div className="flex flex-col sm:flex-row gap-4 justify-between items-center">
+                <div className="flex items-center gap-2 flex-1 w-full sm:w-auto">
                     <div className="relative w-full max-w-sm">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                         <Input
                             placeholder="Search employees..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="pl-9"
+                            className="pl-9 h-9 border-slate-200 bg-white shadow-sm transition-all focus:ring-indigo-500/20"
                         />
                     </div>
                 </div>
 
-                <div className="flex gap-2 w-full sm:w-auto overflow-x-auto pb-1">
+                <div className="flex gap-2 w-full sm:w-auto overflow-x-auto pb-1 items-center">
+                    <span className="text-xs font-semibold uppercase tracking-wider text-slate-400 mr-2 hidden sm:inline-block">Filter:</span>
                     {departments.map(dept => (
                         <Button
                             key={String(dept)}
                             variant={deptFilter === dept ? "default" : "outline"}
                             size="sm"
                             onClick={() => setDeptFilter(String(dept))}
-                            className="whitespace-nowrap rounded-full text-xs"
+                            className={`whitespace-nowrap rounded-full text-xs h-7 px-3 ${deptFilter === dept
+                                    ? "bg-slate-900 text-white hover:bg-slate-800 shadow-sm"
+                                    : "text-slate-600 border-slate-200 hover:bg-slate-50 hover:text-slate-900"
+                                }`}
                         >
                             {String(dept)}
                         </Button>
@@ -126,61 +130,77 @@ export function EmployeesTable({ employees }: EmployeesTableProps) {
             </div>
 
             {/* Table */}
-            <div className="rounded-md border bg-card">
+            <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
                 <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead className="cursor-pointer" onClick={() => handleSort('first_name')}>
-                                Name <ArrowUpDown className="inline ml-1 h-3 w-3" />
+                    <TableHeader className="bg-slate-50/80">
+                        <TableRow className="border-b border-slate-100 hover:bg-transparent">
+                            <TableHead className="w-[50px] font-semibold text-xs uppercase tracking-wider text-slate-500">#</TableHead>
+                            <TableHead className="cursor-pointer font-semibold text-xs uppercase tracking-wider text-slate-500" onClick={() => handleSort('first_name')}>
+                                Name <ArrowUpDown className="inline ml-1 h-3 w-3 text-slate-400" />
                             </TableHead>
-                            <TableHead className="cursor-pointer" onClick={() => handleSort('designation')}>Designation</TableHead>
-                            <TableHead className="cursor-pointer" onClick={() => handleSort('department')}>Department</TableHead>
-                            <TableHead className="cursor-pointer" onClick={() => handleSort('status')}>Status</TableHead>
-                            <TableHead className="text-right cursor-pointer" onClick={() => handleSort('salary_amount')}>Salary</TableHead>
-                            <TableHead className="text-right">Joined</TableHead>
+                            <TableHead className="cursor-pointer font-semibold text-xs uppercase tracking-wider text-slate-500" onClick={() => handleSort('designation')}>Designation</TableHead>
+                            <TableHead className="cursor-pointer font-semibold text-xs uppercase tracking-wider text-slate-500" onClick={() => handleSort('department')}>Department</TableHead>
+                            <TableHead className="cursor-pointer font-semibold text-xs uppercase tracking-wider text-slate-500" onClick={() => handleSort('status')}>Status</TableHead>
+                            <TableHead className="text-right cursor-pointer font-semibold text-xs uppercase tracking-wider text-slate-500" onClick={() => handleSort('salary_amount')}>Salary</TableHead>
+                            <TableHead className="text-right font-semibold text-xs uppercase tracking-wider text-slate-500">Joined</TableHead>
                             <TableHead className="w-[50px]"></TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {sorted.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
-                                    No employees found.
+                                <TableCell colSpan={8} className="h-32 text-center text-slate-400">
+                                    <div className="flex flex-col items-center justify-center gap-2">
+                                        <UserX className="h-8 w-8 opacity-20" />
+                                        <p>No employees found matching criteria.</p>
+                                    </div>
                                 </TableCell>
                             </TableRow>
                         ) : (
-                            sorted.map((emp) => (
-                                <TableRow key={emp.id}>
+                            sorted.map((emp, index) => (
+                                <TableRow key={emp.id} className="hover:bg-slate-50/50 transition-colors border-b border-slate-50 last:border-0 group">
+                                    <TableCell className="text-slate-400 font-mono text-xs">{index + 1}</TableCell>
                                     <TableCell>
                                         <div className="flex flex-col">
-                                            <span className="font-medium">{emp.first_name} {emp.last_name}</span>
-                                            <span className="text-xs text-muted-foreground">{emp.email}</span>
+                                            <span className="font-semibold text-slate-700 group-hover:text-indigo-600 transition-colors">{emp.first_name} {emp.last_name}</span>
+                                            <span className="text-xs text-slate-500">{emp.email}</span>
                                         </div>
                                     </TableCell>
-                                    <TableCell>{emp.designation || '-'}</TableCell>
-                                    <TableCell>{emp.department || '-'}</TableCell>
+                                    <TableCell className="text-slate-600 text-sm font-medium">{emp.designation || '-'}</TableCell>
                                     <TableCell>
-                                        <Badge variant={emp.status === 'active' ? 'default' : 'secondary'} className="capitalize">
+                                        <Badge variant="outline" className="bg-slate-50 text-slate-600 border-slate-200 font-normal">
+                                            {emp.department || '-'}
+                                        </Badge>
+                                    </TableCell>
+                                    <TableCell>
+                                        <Badge
+                                            variant={emp.status === 'active' ? 'default' : 'secondary'}
+                                            className={`capitalize shadow-none border-0 ${emp.status === 'active'
+                                                    ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
+                                                    : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+                                                }`}
+                                        >
                                             {emp.status.replace('_', ' ')}
                                         </Badge>
                                     </TableCell>
-                                    <TableCell className="text-right font-medium">{formatCurrency(emp.salary_amount)}</TableCell>
-                                    <TableCell className="text-right text-muted-foreground text-sm">
+                                    <TableCell className="text-right font-semibold text-slate-700">{formatCurrency(emp.salary_amount)}</TableCell>
+                                    <TableCell className="text-right text-slate-500 text-sm">
                                         {format(new Date(emp.joined_at), 'MMM yyyy')}
                                     </TableCell>
                                     <TableCell>
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
-                                                <Button variant="ghost" className="h-8 w-8 p-0">
+                                                <Button variant="ghost" className="h-8 w-8 p-0 text-slate-400 hover:text-indigo-600">
                                                     <MoreHorizontal className="h-4 w-4" />
                                                 </Button>
                                             </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end">
-                                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                                <DropdownMenuItem onClick={() => handleEdit(emp)}>
-                                                    <Edit className="mr-2 h-4 w-4" /> Edit Details
+                                            <DropdownMenuContent align="end" className="w-48">
+                                                <DropdownMenuLabel className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Actions</DropdownMenuLabel>
+                                                <DropdownMenuItem onClick={() => handleEdit(emp)} className="cursor-pointer">
+                                                    <Edit className="mr-2 h-4 w-4 text-slate-500" /> Edit Details
                                                 </DropdownMenuItem>
-                                                <DropdownMenuItem className="text-amber-600 focus:text-amber-600">
+                                                <DropdownMenuSeparator />
+                                                <DropdownMenuItem className="text-rose-600 focus:text-rose-700 focus:bg-rose-50 cursor-pointer">
                                                     <UserX className="mr-2 h-4 w-4" /> Mark Inactive
                                                 </DropdownMenuItem>
                                             </DropdownMenuContent>
@@ -193,8 +213,9 @@ export function EmployeesTable({ employees }: EmployeesTableProps) {
                 </Table>
             </div>
 
-            <div className="text-xs text-muted-foreground text-center">
-                Showing {sorted.length} employees
+            <div className="flex justify-between items-center text-xs text-slate-400 px-1">
+                <span>Showing {sorted.length} employees</span>
+                <span>Pro Tip: Use filters to quickly find by department.</span>
             </div>
 
             <EditEmployeeDialog

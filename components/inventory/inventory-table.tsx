@@ -134,7 +134,10 @@ export function InventoryTable({ products, categories, canEdit }: InventoryTable
                             variant={categoryFilter === cat.id ? "default" : "outline"}
                             size="sm"
                             onClick={() => setCategoryFilter(cat.id)}
-                            className="whitespace-nowrap rounded-full text-xs"
+                            className={cn(
+                                "whitespace-nowrap rounded-full text-xs transition-all",
+                                categoryFilter === cat.id ? "bg-indigo-600 text-white hover:bg-indigo-700" : "hover:text-indigo-600 hover:border-indigo-200"
+                            )}
                         >
                             {cat.name}
                         </Button>
@@ -143,78 +146,97 @@ export function InventoryTable({ products, categories, canEdit }: InventoryTable
             </div>
 
             {/* TABLE */}
-            <div className="rounded-md border bg-card">
+            <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
                 <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead className="w-[300px] cursor-pointer" onClick={() => handleSort('name')}>
+                    <TableHeader className="bg-slate-50/50">
+                        <TableRow className="hover:bg-slate-50/50 border-b border-slate-100">
+                            <TableHead className="w-[350px] cursor-pointer text-slate-500 font-semibold" onClick={() => handleSort('name')}>
                                 Product Details <ArrowUpDown className="inline ml-1 h-3 w-3" />
                             </TableHead>
-                            <TableHead className="cursor-pointer" onClick={() => handleSort('category_id')}>Category</TableHead>
-                            <TableHead className="text-right cursor-pointer" onClick={() => handleSort('cost_price')}>Cost / Sell</TableHead>
-                            <TableHead className="text-center cursor-pointer" onClick={() => handleSort('quantity')}>Stock Status</TableHead>
-                            <TableHead className="text-right">Actions</TableHead>
+                            <TableHead className="cursor-pointer text-slate-500 font-semibold" onClick={() => handleSort('category_id')}>Category</TableHead>
+                            <TableHead className="cursor-pointer text-slate-500 font-semibold" onClick={() => handleSort('type')}>Type</TableHead>
+                            <TableHead className="text-right cursor-pointer text-slate-500 font-semibold" onClick={() => handleSort('cost_price')}>Cost / Sell</TableHead>
+                            <TableHead className="text-center cursor-pointer text-slate-500 font-semibold" onClick={() => handleSort('quantity')}>Stock Status</TableHead>
+                            <TableHead className="text-right text-slate-500 font-semibold">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {sortedProducts.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
-                                    No products found.
+                                <TableCell colSpan={6} className="h-32 text-center text-muted-foreground">
+                                    <div className="flex flex-col items-center justify-center gap-2">
+                                        <Package className="h-8 w-8 text-slate-300" />
+                                        <p>No products found.</p>
+                                    </div>
                                 </TableCell>
                             </TableRow>
                         ) : (
                             sortedProducts.map((product) => (
-                                <TableRow key={product.id}>
+                                <TableRow key={product.id} className="hover:bg-slate-50/50 transition-colors border-b border-slate-50 last:border-0">
                                     <TableCell>
                                         <div className="flex flex-col">
-                                            <span className="font-medium text-foreground">{product.name}</span>
+                                            <span className="font-semibold text-slate-900">{product.name}</span>
                                             {product.sku && (
-                                                <span className="text-xs text-muted-foreground">SKU: {product.sku}</span>
+                                                <span className="text-xs text-slate-500 font-medium">SKU: {product.sku}</span>
                                             )}
                                         </div>
                                     </TableCell>
                                     <TableCell>
                                         {product.category ? (
-                                            <Badge variant="secondary" className="font-normal">
+                                            <Badge variant="secondary" className="font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 border-0">
                                                 {product.category.name}
                                             </Badge>
                                         ) : (
-                                            <span className="text-muted-foreground text-xs">-</span>
+                                            <span className="text-slate-400 text-xs">-</span>
+                                        )}
+                                    </TableCell>
+                                    <TableCell>
+                                        {product.type === 'service' ? (
+                                            <Badge variant="outline" className="font-medium border-indigo-200 text-indigo-700 bg-indigo-50">
+                                                Service
+                                            </Badge>
+                                        ) : (
+                                            <Badge variant="outline" className="font-medium border-emerald-200 text-emerald-700 bg-emerald-50">
+                                                Goods
+                                            </Badge>
                                         )}
                                     </TableCell>
                                     <TableCell className="text-right">
                                         <div className="flex flex-col items-end gap-0.5">
-                                            <span className="font-medium">{formatCurrency(product.unit_price)}</span>
-                                            <span className="text-xs text-muted-foreground flex items-center gap-1">
+                                            <span className="font-bold text-slate-900">{formatCurrency(product.unit_price)}</span>
+                                            <span className="text-xs text-slate-500 flex items-center gap-1">
                                                 Cost: {formatCurrency(product.cost_price)}
                                             </span>
                                         </div>
                                     </TableCell>
                                     <TableCell className="text-center">
-                                        <div className="flex justify-center">
-                                            <Badge
-                                                variant="outline"
-                                                className={cn(
-                                                    "font-medium border-0",
-                                                    product.quantity <= product.reorder_level
-                                                        ? "bg-amber-100 text-amber-700 hover:bg-amber-200"
-                                                        : product.quantity === 0
+                                        {product.type === 'service' ? (
+                                            <span className="text-xs text-slate-400 font-medium italic">N/A</span>
+                                        ) : (
+                                            <div className="flex justify-center">
+                                                <Badge
+                                                    variant="outline"
+                                                    className={cn(
+                                                        "font-semibold border-0 px-2.5 py-0.5",
+                                                        product.quantity <= product.reorder_level
                                                             ? "bg-rose-100 text-rose-700 hover:bg-rose-200"
-                                                            : "bg-emerald-100 text-emerald-700 hover:bg-emerald-200"
-                                                )}
-                                            >
-                                                {product.quantity <= product.reorder_level && (
-                                                    <AlertTriangle className="mr-1 h-3 w-3" />
-                                                )}
-                                                {product.quantity} {product.unit}
-                                            </Badge>
-                                        </div>
+                                                            : product.quantity === 0
+                                                                ? "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                                                                : "bg-emerald-100 text-emerald-700 hover:bg-emerald-200"
+                                                    )}
+                                                >
+                                                    {product.quantity <= product.reorder_level && (
+                                                        <AlertTriangle className="mr-1.5 h-3 w-3" />
+                                                    )}
+                                                    {product.quantity} {product.unit}
+                                                </Badge>
+                                            </div>
+                                        )}
                                     </TableCell>
                                     <TableCell className="text-right">
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
-                                                <Button variant="ghost" className="h-8 w-8 p-0">
+                                                <Button variant="ghost" className="h-8 w-8 p-0 text-slate-400 hover:text-indigo-600">
                                                     <span className="sr-only">Open menu</span>
                                                     <MoreHorizontal className="h-4 w-4" />
                                                 </Button>

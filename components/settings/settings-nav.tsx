@@ -3,60 +3,86 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { buttonVariants } from "@/components/ui/button";
+import {
+    Building,
+    FileText,
+    Users,
+    CreditCard,
+    Lock,
+    Settings,
+    LayoutGrid
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const items = [
     {
-        title: "General",
+        title: "Business Profile",
         href: "/settings",
+        icon: Building
     },
     {
-        title: "Billing",
-        href: "/settings/billing",
+        title: "GST & Compliance",
+        href: "/settings/gst",
+        icon: FileText
     },
     {
-        title: "Team",
+        title: "Users & Roles",
         href: "/settings/team",
+        icon: Users
+    },
+    {
+        title: "Billing & Plan",
+        href: "/settings/billing",
+        icon: CreditCard
+    },
+    {
+        title: "Security",
+        href: "/settings/security",
+        icon: Lock
+    },
+    {
+        title: "Preferences",
+        href: "/settings/preferences",
+        icon: Settings
     },
 ];
-
 
 export function SettingsNav({ className, ...props }: React.HTMLAttributes<HTMLElement>) {
     const pathname = usePathname();
 
     return (
         <nav
-            className={cn(
-                "flex space-x-2 lg:flex-col lg:space-x-0 lg:space-y-1",
-                className
-            )}
+            className={cn("flex flex-col space-y-1", className)}
             {...props}
         >
             {items.map((item) => {
                 const isActive = pathname === item.href;
+                const Icon = item.icon;
+
                 return (
                     <Link
                         key={item.href}
                         href={item.href}
-                        className={cn(
-                            buttonVariants({ variant: "ghost" }),
-                            "justify-start relative overflow-hidden",
-                            isActive
-                                ? "bg-muted hover:bg-muted font-medium text-primary"
-                                : "hover:bg-muted/50 text-muted-foreground hover:text-foreground",
-                            "transition-all duration-200 ease-in-out"
-                        )}
+                        className="group"
                     >
-                        {isActive && (
-                            <span className="absolute left-0 top-0 bottom-0 w-1 bg-primary rounded-r-full" />
-                        )}
-                        <span className={cn(isActive ? "translate-x-1.5" : "", "transition-transform duration-200")}>
-                            {item.title}
-                        </span>
+                        <div
+                            className={cn(
+                                "flex items-center gap-3 px-3 py-2.5 text-sm rounded-lg transition-all duration-200",
+                                "border-l-2 -ml-px",
+                                isActive
+                                    ? "border-indigo-600 text-indigo-600 font-semibold bg-indigo-50/50"
+                                    : "border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium"
+                            )}
+                        >
+                            <Icon className={cn(
+                                "h-4 w-4 flex-shrink-0",
+                                isActive ? "text-indigo-600" : "text-slate-400 group-hover:text-slate-600"
+                            )} />
+                            <span>{item.title}</span>
+                        </div>
                     </Link>
                 );
             })}
         </nav>
     );
 }
-
