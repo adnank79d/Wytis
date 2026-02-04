@@ -22,6 +22,7 @@ import * as React from "react";
 
 const sidebarGroups = [
     {
+        title: "Overview",
         items: [
             { label: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
             { label: "Analytics", icon: BarChart4, href: "/analytics" },
@@ -29,6 +30,7 @@ const sidebarGroups = [
         ]
     },
     {
+        title: "Business",
         items: [
             { label: "Invoices", icon: Receipt, href: "/invoices" },
             { label: "Payments", icon: CreditCard, href: "/payments" },
@@ -38,6 +40,7 @@ const sidebarGroups = [
         ]
     },
     {
+        title: "Management",
         items: [
             { label: "Customers", icon: Users, href: "/customers" },
             { label: "CRM", icon: Contact2, href: "/crm" },
@@ -77,83 +80,92 @@ export function NewSidebar({ className, isMobile = false, onNavigate }: SidebarP
             <nav className="flex-1 flex flex-col justify-between py-6">
                 <div className="flex flex-col gap-2">
                     {sidebarGroups.map((group, groupIdx) => (
-                        <div key={groupIdx} className="flex flex-col gap-0.5 px-3">
-                            {group.items.map((item) => {
-                                const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`);
+                        <div key={groupIdx}>
+                            {isExpanded && group.title && (
+                                <div className="px-3 mb-1.5 mt-1">
+                                    <h4 className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider">
+                                        {group.title}
+                                    </h4>
+                                </div>
+                            )}
+                            <div className="flex flex-col gap-0.5 px-3">
+                                <div key={groupIdx} className="flex flex-col gap-0.5 px-3">
+                                    {group.items.map((item) => {
+                                        const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`);
 
-                                return (
-                                    <Link
-                                        key={item.href}
-                                        href={item.href}
-                                        onClick={onNavigate}
-                                        className={cn(
-                                            "relative flex items-center h-8 rounded-md",
-                                            "transition-all duration-150",
-                                            "group/item",
-                                            isActive
-                                                ? "bg-primary/10 text-primary"
-                                                : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
-                                        )}
-                                    >
-                                        {/* Icon - Fixed position */}
-                                        <div className="w-10 flex items-center justify-center shrink-0">
-                                            <item.icon className={cn(
-                                                "h-[18px] w-[18px] transition-transform",
-                                                isActive && "scale-105"
-                                            )} />
-                                        </div>
+                                        return (
+                                            <Link
+                                                key={item.href}
+                                                href={item.href}
+                                                onClick={onNavigate}
+                                                className={cn(
+                                                    "relative flex items-center h-8 rounded-md",
+                                                    "transition-all duration-150",
+                                                    "group/item",
+                                                    isActive
+                                                        ? "bg-primary/10 text-primary"
+                                                        : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
+                                                )}
+                                            >
+                                                {/* Icon - Fixed position */}
+                                                <div className="w-10 flex items-center justify-center shrink-0">
+                                                    <item.icon className={cn(
+                                                        "h-[18px] w-[18px] transition-transform",
+                                                        isActive && "scale-105"
+                                                    )} />
+                                                </div>
 
-                                        {/* Label - Fades in */}
-                                        <span className={cn(
-                                            "text-sm font-medium whitespace-nowrap transition-all duration-150",
-                                            isExpanded
-                                                ? "opacity-100 translate-x-0"
-                                                : "opacity-0 -translate-x-2 w-0 overflow-hidden"
-                                        )}>
-                                            {item.label}
-                                        </span>
+                                                {/* Label - Fades in */}
+                                                <span className={cn(
+                                                    "text-sm font-medium whitespace-nowrap transition-all duration-150",
+                                                    isExpanded
+                                                        ? "opacity-100 translate-x-0"
+                                                        : "opacity-0 -translate-x-2 w-0 overflow-hidden"
+                                                )}>
+                                                    {item.label}
+                                                </span>
 
-                                        {/* Active indicator */}
-                                        {isActive && (
-                                            <div className="absolute right-0 top-1/2 -translate-y-1/2 w-0.5 h-4 bg-primary rounded-l" />
-                                        )}
-                                    </Link>
-                                );
-                            })}
-                        </div>
+                                                {/* Active indicator */}
+                                                {isActive && (
+                                                    <div className="absolute right-0 top-1/2 -translate-y-1/2 w-0.5 h-4 bg-primary rounded-l" />
+                                                )}
+                                            </Link>
+                                        );
+                                    })}
+                                </div>
                     ))}
-                </div>
+                            </div>
 
-                {/* Settings - Bottom */}
-                <div className="px-3">
-                    <Link
-                        href="/settings"
-                        onClick={onNavigate}
-                        className={cn(
-                            "relative flex items-center h-8 rounded-md",
-                            "transition-all duration-150",
-                            (pathname === "/settings" || pathname?.startsWith("/settings/"))
-                                ? "bg-primary/10 text-primary"
-                                : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
-                        )}
-                    >
-                        <div className="w-10 flex items-center justify-center shrink-0">
-                            <Settings className="h-[18px] w-[18px]" />
-                        </div>
-                        <span className={cn(
-                            "text-sm font-medium whitespace-nowrap transition-all duration-150",
-                            isExpanded
-                                ? "opacity-100 translate-x-0"
-                                : "opacity-0 -translate-x-2 w-0 overflow-hidden"
-                        )}>
-                            Settings
-                        </span>
-                        {(pathname === "/settings" || pathname?.startsWith("/settings/")) && (
-                            <div className="absolute right-0 top-1/2 -translate-y-1/2 w-0.5 h-4 bg-primary rounded-l" />
-                        )}
-                    </Link>
-                </div>
-            </nav>
+                            {/* Settings - Bottom */}
+                            <div className="px-3">
+                                <Link
+                                    href="/settings"
+                                    onClick={onNavigate}
+                                    className={cn(
+                                        "relative flex items-center h-8 rounded-md",
+                                        "transition-all duration-150",
+                                        (pathname === "/settings" || pathname?.startsWith("/settings/"))
+                                            ? "bg-primary/10 text-primary"
+                                            : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
+                                    )}
+                                >
+                                    <div className="w-10 flex items-center justify-center shrink-0">
+                                        <Settings className="h-[18px] w-[18px]" />
+                                    </div>
+                                    <span className={cn(
+                                        "text-sm font-medium whitespace-nowrap transition-all duration-150",
+                                        isExpanded
+                                            ? "opacity-100 translate-x-0"
+                                            : "opacity-0 -translate-x-2 w-0 overflow-hidden"
+                                    )}>
+                                        Settings
+                                    </span>
+                                    {(pathname === "/settings" || pathname?.startsWith("/settings/")) && (
+                                        <div className="absolute right-0 top-1/2 -translate-y-1/2 w-0.5 h-4 bg-primary rounded-l" />
+                                    )}
+                                </Link>
+                            </div>
+                        </nav>
         </aside>
-    );
+                );
 }
