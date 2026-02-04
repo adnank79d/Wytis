@@ -92,7 +92,9 @@ export function NewSidebar({ className, isMobile = false, onNavigate }: SidebarP
                                             {group.title}
                                         </h4>
                                     ) : (
-                                        <div className="w-8 h-px bg-border" />
+                                        <div className="text-[10px] font-bold text-muted-foreground/50 uppercase">
+                                            {group.title[0]}
+                                        </div>
                                     )}
                                 </div>
                             )}

@@ -1,5 +1,5 @@
 @import "tailwindcss";
-/* Force cache bust ID: 38 - COLLAPSED SECTION INDICATORS */
+/* Force cache bust ID: 39 - SECTION LETTERS IN COLLAPSED STATE */
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
