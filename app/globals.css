@@ -1,5 +1,5 @@
 @import "tailwindcss";
-/* Force cache bust ID: 41 - LARGER SECTION SPACING (gap-6) */
+/* Force cache bust ID: 42 - REDUCED NAVBAR GAP (py-4) */
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));

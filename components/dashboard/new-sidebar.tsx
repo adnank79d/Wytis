@@ -77,7 +77,7 @@ export function NewSidebar({ className, isMobile = false, onNavigate }: SidebarP
             data-version="supabase-v10"
         >
             {/* Navigation */}
-            <nav className="flex-1 flex flex-col justify-between py-6">
+            <nav className="flex-1 flex flex-col justify-between py-4">
                 <div className="flex flex-col gap-6">
                     {sidebarGroups.map((group, groupIdx) => (
                         <div key={groupIdx}>
