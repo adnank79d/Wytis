@@ -1,5 +1,5 @@
 @import "tailwindcss";
-/* Force cache bust ID: 39 - SECTION LETTERS IN COLLAPSED STATE */
+/* Force cache bust ID: 40 - INCREASED SECTION SPACING (gap-4) */
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
