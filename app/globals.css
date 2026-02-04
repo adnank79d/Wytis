@@ -1,5 +1,5 @@
 @import "tailwindcss";
-/* Force cache bust ID: 40 - INCREASED SECTION SPACING (gap-4) */
+/* Force cache bust ID: 41 - LARGER SECTION SPACING (gap-6) */
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
