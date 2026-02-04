@@ -1,5 +1,5 @@
 @import "tailwindcss";
-/* Force cache bust ID: 37 - SECTION HEADERS ADDED */
+/* Force cache bust ID: 38 - COLLAPSED SECTION INDICATORS */
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
