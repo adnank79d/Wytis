@@ -77,14 +77,14 @@ export function NewSidebar({ className, isMobile = false, onNavigate }: SidebarP
             data-version="supabase-v10"
         >
             {/* Navigation */}
-            <nav className="flex-1 flex flex-col justify-between py-4">
+            <nav className="flex-1 flex flex-col justify-between py-2">
                 <div className="flex flex-col gap-6">
                     {sidebarGroups.map((group, groupIdx) => (
                         <div key={groupIdx}>
                             {/* Section Header */}
                             {group.title && (
                                 <div className={cn(
-                                    "mb-5 mt-1",
+                                    "mb-6 mt-1",
                                     isExpanded ? "px-3" : "flex justify-center px-3"
                                 )}>
                                     {isExpanded ? (
