@@ -84,7 +84,7 @@ export function NewSidebar({ className, isMobile = false, onNavigate }: SidebarP
                             {/* Section Header */}
                             {group.title && (
                                 <div className={cn(
-                                    "mb-4 mt-1",
+                                    "mb-5 mt-1",
                                     isExpanded ? "px-3" : "flex justify-center px-3"
                                 )}>
                                     {isExpanded ? (
