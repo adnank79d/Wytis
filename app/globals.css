@@ -1,5 +1,5 @@
 @import "tailwindcss";
-/* Force cache bust ID: 33 - FIXED ICON ALIGNMENT */
+/* Force cache bust ID: 34 - SUPABASE-STYLE SIDEBAR V9 */
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
