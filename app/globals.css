@@ -1,5 +1,5 @@
 @import "tailwindcss";
-/* Force cache bust ID: 28 - NEW SIDEBAR COMPONENT V7 */
+/* Force cache bust ID: 29 - PERFECT MINIMAL SIDEBAR V8 */
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
