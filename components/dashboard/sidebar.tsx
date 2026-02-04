@@ -22,7 +22,7 @@ import * as React from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 // --- Configuration ---
-const SIDEBAR_ANIMATION = "transition-all duration-200 ease-in-out";
+const SIDEBAR_ANIMATION = "transition-all duration-300 ease-in-out";
 
 const sidebarGroups = [
     {
@@ -97,13 +97,13 @@ export function Sidebar({ className, isMobile = false, onNavigate }: SidebarProp
                 isMobile && "w-full border-none",
                 className
             )}
-            data-version="premium-v4"
+            data-version="stabilized-v5"
         >
             {/* Mobile Header */}
             {!isMobile && (
                 <div className={cn(
-                    "flex items-center h-14 px-4 lg:hidden border-b border-sidebar-border",
-                    effectiveCollapsed ? "justify-center" : "justify-between"
+                    "flex items-center h-16 px-6 lg:hidden border-b border-sidebar-border",
+                    "justify-between"
                 )}>
                     <span className={cn("font-semibold tracking-tight", effectiveCollapsed && "hidden")}>Menu</span>
                 </div>
@@ -112,17 +112,17 @@ export function Sidebar({ className, isMobile = false, onNavigate }: SidebarProp
             {/* Scrollable Navigation Area */}
             <div className="flex-1 overflow-hidden flex flex-col min-h-0">
                 <ScrollArea className="flex-1">
-                    <div className={cn("flex flex-col gap-6 py-4", isMobile ? "px-4" : "px-3")}>
+                    <div className={cn("flex flex-col gap-8 py-6", isMobile ? "px-6" : "px-0")}>
                         {sidebarGroups.map((group, groupIndex) => (
-                            <div key={group.title} className="flex flex-col gap-1">
+                            <div key={group.title} className="flex flex-col gap-2">
                                 {/* Group Title */}
                                 {!effectiveCollapsed && (
-                                    <h4 className="px-2 py-1 text-xs font-medium text-muted-foreground/60 uppercase tracking-widest">
+                                    <h4 className="px-6 py-1 text-xs font-semibold text-muted-foreground/50 uppercase tracking-widest pl-6">
                                         {group.title}
                                     </h4>
                                 )}
 
-                                <div className="flex flex-col gap-[2px]">
+                                <div className="flex flex-col gap-1">
                                     {group.items.map((route) => {
                                         const isActive = pathname === route.href || pathname?.startsWith(`${route.href}/`);
 
@@ -132,26 +132,28 @@ export function Sidebar({ className, isMobile = false, onNavigate }: SidebarProp
                                                 href={route.href}
                                                 onClick={onNavigate}
                                                 className={cn(
-                                                    "flex items-center rounded-md text-sm font-medium transition-all group/item",
+                                                    "flex items-center text-sm font-medium transition-all group/item relative",
                                                     SIDEBAR_ANIMATION,
-                                                    effectiveCollapsed ? "justify-center px-2 py-2.5" : "px-3 py-2 gap-3",
+                                                    // CRITICAL FIX: Consistent horizontal padding (pl-6) ensures icon NEVER moves
+                                                    "pl-6 py-3 min-h-[44px]",
                                                     isActive
-                                                        ? "bg-sidebar-accent text-sidebar-primary shadow-sm ring-1 ring-inset ring-sidebar-border/50"
-                                                        : "text-muted-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-foreground",
+                                                        ? "text-sidebar-primary bg-sidebar-accent/40 border-r-2 border-primary"
+                                                        : "text-muted-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent/20",
                                                 )}
                                                 title={effectiveCollapsed ? route.label : undefined}
                                             >
                                                 <route.icon className={cn(
                                                     "shrink-0 transition-colors",
-                                                    isMobile ? "h-5 w-5" : "h-4 w-4",
+                                                    isMobile ? "h-5 w-5" : "h-5 w-5",
                                                     isActive ? "text-sidebar-primary" : "text-muted-foreground group-hover/item:text-sidebar-foreground"
                                                 )} />
 
-                                                {!effectiveCollapsed && (
-                                                    <span className="truncate">
-                                                        {route.label}
-                                                    </span>
-                                                )}
+                                                <span className={cn(
+                                                    "ml-4 truncate transition-all duration-300",
+                                                    effectiveCollapsed ? "opacity-0 w-0" : "opacity-100 w-auto"
+                                                )}>
+                                                    {route.label}
+                                                </span>
                                             </Link>
                                         );
                                     })}
@@ -164,33 +166,37 @@ export function Sidebar({ className, isMobile = false, onNavigate }: SidebarProp
 
             {/* Pinned Footer (Settings) */}
             <div className={cn(
-                "p-3 mt-auto border-t border-sidebar-border bg-sidebar",
+                "mt-auto border-t border-sidebar-border bg-sidebar",
                 isMobile && "pb-8"
             )}>
                 <Link
                     href="/settings"
                     onClick={onNavigate}
                     className={cn(
-                        "flex items-center rounded-md text-sm font-medium transition-all group/item",
+                        "flex items-center text-sm font-medium transition-all group/item relative h-16",
                         SIDEBAR_ANIMATION,
-                        effectiveCollapsed ? "justify-center px-2 py-2.5" : "px-3 py-2 gap-3",
+                        // Consistent padding
+                        "pl-6",
                         (pathname === "/settings" || pathname?.startsWith("/settings/"))
-                            ? "bg-sidebar-accent text-sidebar-primary shadow-sm"
-                            : "text-muted-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                            ? "text-sidebar-primary bg-sidebar-accent/40"
+                            : "text-muted-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent/20"
                     )}
                     title="Settings"
                 >
                     <Settings className={cn(
                         "shrink-0 transition-colors",
-                        isMobile ? "h-5 w-5" : "h-4 w-4",
+                        isMobile ? "h-5 w-5" : "h-5 w-5",
                         (pathname === "/settings" || pathname?.startsWith("/settings/"))
                             ? "text-sidebar-primary"
                             : "text-muted-foreground group-hover/item:text-sidebar-foreground"
                     )} />
 
-                    {!effectiveCollapsed && (
-                        <span className="truncate">Settings</span>
-                    )}
+                    <span className={cn(
+                        "ml-4 truncate transition-all duration-300",
+                        effectiveCollapsed ? "opacity-0 w-0" : "opacity-100 w-auto"
+                    )}>
+                        Settings
+                    </span>
                 </Link>
             </div>
         </div>
