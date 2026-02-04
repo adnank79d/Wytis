@@ -1,6 +1,6 @@
 "use client";
 
-import { Sidebar as SidebarComponent } from "./sidebar";
+import { NewSidebar as SidebarComponent } from "./new-sidebar";
 import { useRouter } from "next/navigation";
 
 interface ClientSidebarWrapperProps {
