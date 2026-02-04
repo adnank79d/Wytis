@@ -115,7 +115,7 @@ export function Sidebar({ className, isMobile = false, onNavigate }: SidebarProp
                                 {groupIndex > 0 && (
                                     <div className="my-3 mx-2 border-t border-border/40" />
                                 )}
-                                <div className="flex flex-col gap-0.5">
+                                <div className="flex flex-col gap-0">
                                     {group.items.map((route) => {
                                         const isActive = pathname === route.href || pathname?.startsWith(`${route.href}/`);
 
@@ -129,7 +129,7 @@ export function Sidebar({ className, isMobile = false, onNavigate }: SidebarProp
                                                     "flex items-center rounded-md font-medium transition-all duration-200 relative group/link text-sm",
                                                     effectiveCollapsed ? "gap-0 justify-center px-2" : "gap-3 pl-[15px] pr-3",
                                                     // Mobile: larger touch targets
-                                                    isMobile ? "px-3 py-3" : "py-2",
+                                                    isMobile ? "px-3 py-3" : "py-1.5",
                                                     isActive
                                                 )}
                                                 title={effectiveCollapsed ? route.label : undefined}
@@ -171,7 +171,7 @@ export function Sidebar({ className, isMobile = false, onNavigate }: SidebarProp
                     className={cn(
                         "flex items-center rounded-md font-medium transition-all duration-200 relative group/link text-sm",
                         effectiveCollapsed ? "gap-0 justify-center px-2" : "gap-3 pl-[15px] pr-3",
-                        isMobile ? "px-3 py-3" : "py-2",
+                        isMobile ? "px-3 py-3" : "py-1.5",
                         pathname === "/settings" || pathname?.startsWith("/settings/") ? "text-primary" : "text-muted-foreground hover:text-foreground"
                     )}
                     title="Settings"

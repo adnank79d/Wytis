@@ -1,4 +1,5 @@
 @import "tailwindcss";
+/* Force cache bust ID: 22 */
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
