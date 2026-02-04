@@ -1,5 +1,5 @@
 @import "tailwindcss";
-/* Force cache bust ID: 43 - SECTION HEADER SPACING (mb-2.5) */
+/* Force cache bust ID: 44 - CONSISTENT HEADER SPACING (mb-3) */
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
