@@ -114,16 +114,18 @@ export function NewSidebar({ className, isMobile = false, onNavigate }: SidebarP
                                     onClick={onNavigate}
                                     className={cn(
                                         "flex items-center h-9 rounded-md transition-all duration-150 group relative",
-                                        effectiveCollapsed ? "justify-center px-0" : "gap-3 px-3",
                                         isActive
                                             ? "bg-primary/10 text-primary font-medium"
                                             : "text-muted-foreground hover:bg-accent hover:text-foreground",
                                     )}
                                     title={effectiveCollapsed ? route.label : undefined}
                                 >
-                                    <route.icon className="h-4 w-4 shrink-0" />
+                                    {/* Fixed width icon container - never shifts */}
+                                    <div className="w-12 flex items-center justify-center shrink-0">
+                                        <route.icon className="h-4 w-4" />
+                                    </div>
                                     {!effectiveCollapsed && (
-                                        <span className="text-sm truncate">{route.label}</span>
+                                        <span className="text-sm truncate pr-3">{route.label}</span>
                                     )}
                                 </Link>
                             );
@@ -139,16 +141,17 @@ export function NewSidebar({ className, isMobile = false, onNavigate }: SidebarP
                     onClick={onNavigate}
                     className={cn(
                         "flex items-center h-10 rounded-md transition-all duration-150",
-                        effectiveCollapsed ? "justify-center px-0" : "gap-3 px-3",
                         (pathname === "/settings" || pathname?.startsWith("/settings/"))
                             ? "bg-primary/10 text-primary font-medium"
                             : "text-muted-foreground hover:bg-accent hover:text-foreground"
                     )}
                     title="Settings"
                 >
-                    <Settings className="h-4 w-4 shrink-0" />
+                    <div className="w-12 flex items-center justify-center shrink-0">
+                        <Settings className="h-4 w-4" />
+                    </div>
                     {!effectiveCollapsed && (
-                        <span className="text-sm truncate">Settings</span>
+                        <span className="text-sm truncate pr-3">Settings</span>
                     )}
                 </Link>
             </div>
