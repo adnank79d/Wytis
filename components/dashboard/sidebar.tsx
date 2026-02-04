@@ -164,7 +164,7 @@ export function Sidebar({ className, isMobile = false, onNavigate }: SidebarProp
             </ScrollArea>
 
             {/* Pinned Bottom Section */}
-            <div className="p-3 border-t bg-background/50 backdrop-blur-sm">
+            <div className="px-3 py-2 mt-auto">
                 <Link
                     href="/settings"
                     onClick={onNavigate}
