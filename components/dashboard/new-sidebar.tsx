@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
@@ -94,9 +95,45 @@ export function NewSidebar({ className, isMobile = false, isOpen = false, onClos
                         isOpen ? "translate-x-0" : "-translate-x-full",
                         className
                     )}
-                    data-version="smooth-v1-mobile"
+                    data-version="smooth-v2-mobile-header"
                 >
                     <div className="flex flex-col h-full">
+                        {/* Mobile-Only Header with Logo and Close */}
+                        <div className="flex items-center justify-between h-14 px-4 border-b border-border/50 shrink-0">
+                            <div className="flex items-center gap-2">
+                                <Image
+                                    src="/logo.png"
+                                    alt="Wytis"
+                                    width={100}
+                                    height={32}
+                                    className="h-7 w-auto object-contain"
+                                    priority
+                                    aria-label="Wytis"
+                                />
+                            </div>
+                            <button
+                                onClick={onClose}
+                                className="flex items-center justify-center h-8 w-8 rounded-md hover:bg-accent/50 transition-colors"
+                                aria-label="Close sidebar"
+                            >
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="20"
+                                    height="20"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    className="text-muted-foreground"
+                                >
+                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                </svg>
+                            </button>
+                        </div>
+
                         {/* Mobile Navigation */}
                         <nav className="flex-1 flex flex-col px-4 py-4 overflow-y-auto">
                             {/* Main Navigation */}
