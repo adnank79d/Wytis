@@ -63,20 +63,20 @@ export function NewSidebar({ className, isMobile = false, onNavigate }: SidebarP
     // Mobile: Return touch-friendly drawer trigger (handled by parent)
     if (isMobile) {
         return (
-            <div className="flex flex-col h-full bg-background p-4">
+            <div className="flex flex-col h-full bg-background px-3 py-4">
                 {/* Mobile Navigation Items */}
-                <nav className="flex-1 flex flex-col gap-6">
+                <nav className="flex-1 flex flex-col gap-3">
                     {sidebarGroups.map((group, groupIdx) => (
                         <div key={groupIdx}>
                             {/* Section Header */}
-                            <div className="mb-3">
-                                <h4 className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider px-2">
+                            <div className="mb-2">
+                                <h4 className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider px-1">
                                     {group.title}
                                 </h4>
                             </div>
 
                             {/* Section Items */}
-                            <div className="flex flex-col gap-1">
+                            <div className="flex flex-col gap-0.5">
                                 {group.items.map((item) => {
                                     const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`);
 
@@ -86,7 +86,7 @@ export function NewSidebar({ className, isMobile = false, onNavigate }: SidebarP
                                             href={item.href}
                                             onClick={onNavigate}
                                             className={cn(
-                                                "flex items-center gap-3 px-3 py-3 rounded-md",
+                                                "flex items-center gap-3 px-3 py-2.5 rounded-md",
                                                 "transition-all duration-150",
                                                 "active:scale-95", // Touch feedback
                                                 isActive
@@ -108,12 +108,12 @@ export function NewSidebar({ className, isMobile = false, onNavigate }: SidebarP
                 </nav>
 
                 {/* Settings - Bottom */}
-                <div className="border-t border-border/50 pt-4 mt-4">
+                <div className="border-t border-border/50 pt-3 mt-auto">
                     <Link
                         href="/settings"
                         onClick={onNavigate}
                         className={cn(
-                            "flex items-center gap-3 px-3 py-3 rounded-md",
+                            "flex items-center gap-3 px-3 py-2.5 rounded-md",
                             "transition-all duration-150",
                             "active:scale-95",
                             (pathname === "/settings" || pathname?.startsWith("/settings/"))
