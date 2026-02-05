@@ -12,7 +12,7 @@ import { Role } from "@/lib/permissions";
 import { createClient } from "@/lib/supabase/client";
 import { NotificationsPopover } from "@/components/dashboard/notifications-popover";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Sidebar } from "@/components/dashboard/sidebar";
+import { NewSidebar } from "@/components/dashboard/new-sidebar";
 import { SearchBar } from "@/components/dashboard/search-bar";
 import { DateTimeDisplay } from "@/components/dashboard/date-time-display";
 import {
@@ -94,7 +94,7 @@ export function Header({ userRole, businessName, userEmail, userName }: HeaderPr
                             <span className="sr-only">Toggle menu</span>
                         </Button>
                     </SheetTrigger>
-                    <SheetContent side="left" className="p-0 border-r w-72">
+                    <SheetContent side="left" className="p-0 border-r w-[280px]">
                         <div className="flex items-center h-12 border-b px-4">
                             <Link href="/dashboard" className="flex items-center gap-2">
                                 <Image
@@ -107,8 +107,9 @@ export function Header({ userRole, businessName, userEmail, userName }: HeaderPr
                                 />
                             </Link>
                         </div>
-                        <Sidebar
+                        <NewSidebar
                             isMobile={true}
+                            isOpen={true}
                             className="border-none"
                         />
                     </SheetContent>
