@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
@@ -100,7 +101,15 @@ export function NewSidebar({ className, isMobile = false, isOpen = false, onClos
                         {/* Mobile-Only Header with Logo and Close */}
                         <div className="flex items-center justify-between h-14 px-4 border-b border-border/50 shrink-0">
                             <div className="flex items-center gap-2">
-                                <span className="text-lg font-semibold text-foreground">Wytis</span>
+                                <Image
+                                    src="/logo.png"
+                                    alt="Wytis"
+                                    width={100}
+                                    height={32}
+                                    className="h-7 w-auto object-contain"
+                                    priority
+                                    aria-label="Wytis"
+                                />
                             </div>
                             <button
                                 onClick={onClose}

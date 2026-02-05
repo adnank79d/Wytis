@@ -1,5 +1,5 @@
 @import "tailwindcss";
-/* Force cache bust ID: 56 - MOBILE HEADER WITH LOGO+CLOSE */
+/* Force cache bust ID: 57 - MOBILE LOGO IMAGE */
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
