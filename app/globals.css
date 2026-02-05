@@ -1,5 +1,5 @@
 @import "tailwindcss";
-/* Force cache bust ID: 51 - COMPACT MOBILE DESIGN */
+/* Force cache bust ID: 52 - SIDEBAR REDESIGN V1 */
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
