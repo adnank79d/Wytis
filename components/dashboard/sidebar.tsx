@@ -1,5 +1,3 @@
-
-// Force Vercel rebuild - Layout check
 "use client";
 
 import Link from "next/link";
@@ -22,6 +20,13 @@ import {
 } from "lucide-react";
 import * as React from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+
+// --- Configuration ---
+// The key to stability is ensuring these dimensions match EXACTLY in both states
+const COLLAPSED_WIDTH = "w-[72px]";
+const EXPANDED_WIDTH = "w-[270px]";
+const ICON_ZONE_WIDTH = "min-w-[72px] w-[72px]"; // Rigid width for the icon container
+const TRANSITION = "transition-all duration-300 ease-[cubic-bezier(0.25,0.1,0.25,1.0)]";
 
 const sidebarGroups = [
     {
@@ -61,7 +66,7 @@ interface SidebarProps {
 
 export function Sidebar({ className, isMobile = false, onNavigate }: SidebarProps) {
     const pathname = usePathname();
-    const [isCollapsed, setIsCollapsed] = React.useState(!isMobile); // Default collapsed on desktop
+    const [isCollapsed, setIsCollapsed] = React.useState(!isMobile);
     const [isMounted, setIsMounted] = React.useState(false);
 
     React.useEffect(() => {
@@ -71,7 +76,6 @@ export function Sidebar({ className, isMobile = false, onNavigate }: SidebarProp
         }
     }, [isMobile]);
 
-    // Auto-collapse logic
     const handleMouseEnter = () => {
         if (!isMobile) setIsCollapsed(false);
     };
@@ -80,43 +84,49 @@ export function Sidebar({ className, isMobile = false, onNavigate }: SidebarProp
         if (!isMobile) setIsCollapsed(true);
     };
 
-    // For mobile, never collapse (it's in a sheet)
     const effectiveCollapsed = isMobile ? false : isCollapsed;
 
     if (!isMounted) {
-        return <div className={cn("w-[70px] border-r bg-background flex flex-col h-full", className)} />; // Skeleton state (collapsed default)
+        return <div className={cn("border-r bg-sidebar flex flex-col h-full", COLLAPSED_WIDTH, className)} />;
     }
 
     return (
         <div
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
-            style={{ transition: 'width 200ms cubic-bezier(0.25, 0.46, 0.45, 0.94)' }}
             className={cn(
-                "border-r bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 flex flex-col h-full relative group z-20 overflow-hidden",
-                effectiveCollapsed ? "w-[70px]" : "w-48",
-                isMobile && "border-none w-full",
+                "flex flex-col h-full bg-sidebar border-r border-sidebar-border relative z-20 text-sidebar-foreground overflow-hidden",
+                TRANSITION,
+                effectiveCollapsed ? COLLAPSED_WIDTH : EXPANDED_WIDTH,
+                isMobile && "w-full border-none",
                 className
             )}
-            data-version="dense-spacing-v2"
+            data-version="structural-v6"
         >
-            {/* Mobile Header - only show if not in sheet */}
+            {/* Mobile Header */}
             {!isMobile && (
-                <div className="p-4 border-b flex items-center justify-between lg:hidden">
-                    <span className="font-semibold text-lg tracking-tight">Menu</span>
+                <div className={cn(
+                    "flex items-center h-16 border-b border-sidebar-border lg:hidden",
+                    effectiveCollapsed ? "justify-center" : "justify-between px-6"
+                )}>
+                    <span className={cn("font-semibold tracking-tight", effectiveCollapsed && "hidden")}>Menu</span>
                 </div>
             )}
 
-            {/* Navigation Area */}
-            <ScrollArea className="flex-1 bg-transparent">
-                <div className="py-4">
-                    <div className={cn("flex flex-col", isMobile ? "px-2" : "px-3")}>
+            {/* Scrollable Navigation Area */}
+            <div className="flex-1 overflow-hidden flex flex-col min-h-0">
+                <ScrollArea className="flex-1">
+                    <div className={cn("flex flex-col gap-8 py-6", isMobile && "px-0")}>
                         {sidebarGroups.map((group, groupIndex) => (
-                            <div key={group.title} className={cn("mb-1", groupIndex > 0 && "mt-4")}>
-                                {groupIndex > 0 && (
-                                    <div className="my-3 mx-2 border-t border-border/40" />
+                            <div key={group.title} className="flex flex-col gap-2">
+                                {/* Group Title - Aligned with text zone */}
+                                {!effectiveCollapsed && (
+                                    <h4 className="py-1 text-xs font-semibold text-muted-foreground/50 uppercase tracking-widest pl-[72px] whitespace-nowrap overflow-hidden">
+                                        {group.title}
+                                    </h4>
                                 )}
-                                <div className="flex flex-col gap-0">
+
+                                <div className="flex flex-col gap-1">
                                     {group.items.map((route) => {
                                         const isActive = pathname === route.href || pathname?.startsWith(`${route.href}/`);
 
@@ -126,32 +136,39 @@ export function Sidebar({ className, isMobile = false, onNavigate }: SidebarProp
                                                 href={route.href}
                                                 onClick={onNavigate}
                                                 className={cn(
-                                                    // Gap logic: Remove gap when collapsed to prevent "phantom" spacing shift
-                                                    "flex items-center rounded-md font-medium transition-all duration-200 relative group/link text-sm",
-                                                    effectiveCollapsed ? "gap-0 justify-center px-2" : "gap-3 pl-[15px] pr-3",
-                                                    // Mobile: larger touch targets
-                                                    isMobile ? "px-3 py-3" : "py-1.5",
+                                                    "flex items-center text-sm font-medium transition-colors group/item relative",
+                                                    "h-11", // Fixed height for consistency
                                                     isActive
+                                                        ? "text-sidebar-primary bg-sidebar-accent/50"
+                                                        : "text-muted-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent/20",
                                                 )}
                                                 title={effectiveCollapsed ? route.label : undefined}
                                             >
-                                                {isActive && <div className={cn("absolute left-0 top-1/2 -translate-y-1/2 bg-primary rounded-r-full", isMobile ? "w-1 h-6" : "w-0.5 h-4 -ml-2")} />}
-                                                <route.icon className={cn(
-                                                    "shrink-0 transition-transform duration-300",
-                                                    isMobile ? "h-5 w-5" : "h-4 w-4",
-                                                    isActive && "text-primary"
-                                                )} />
-                                                <span
-                                                    style={{
-                                                        transition: effectiveCollapsed
-                                                            ? 'opacity 100ms ease-out, transform 100ms ease-out'
-                                                            : 'opacity 150ms ease-out 50ms, transform 150ms ease-out 50ms'
-                                                    }}
-                                                    className={cn(
-                                                        "truncate whitespace-nowrap",
-                                                        effectiveCollapsed ? "opacity-0 scale-95 w-0 overflow-hidden" : "opacity-100 scale-100"
-                                                    )}
-                                                >
+                                                {/* ICON ZONE - This logic guarantees 0px shift */}
+                                                <div className={cn(
+                                                    "flex items-center justify-center shrink-0",
+                                                    ICON_ZONE_WIDTH, // 72px rigid
+                                                    "h-full"
+                                                )}>
+                                                    <route.icon className={cn(
+                                                        "transition-all duration-300",
+                                                        isMobile ? "h-6 w-6" : "h-5 w-5",
+                                                        isActive ? "text-sidebar-primary" : "text-muted-foreground group-hover/item:text-sidebar-foreground"
+                                                    )} />
+                                                </div>
+
+                                                {/* Active Border - Pinned to left edge */}
+                                                {isActive && (
+                                                    <div className="absolute left-0 top-1/2 -translate-y-1/2 h-8 w-[3px] bg-primary rounded-r-full" />
+                                                )}
+
+                                                {/* Text Zone */}
+                                                <span className={cn(
+                                                    "truncate transition-all duration-300 pr-4",
+                                                    effectiveCollapsed
+                                                        ? "opacity-0 w-0 -translate-x-4"
+                                                        : "opacity-100 w-auto translate-x-0"
+                                                )}>
                                                     {route.label}
                                                 </span>
                                             </Link>
@@ -161,39 +178,51 @@ export function Sidebar({ className, isMobile = false, onNavigate }: SidebarProp
                             </div>
                         ))}
                     </div>
-                </div>
-            </ScrollArea>
+                </ScrollArea>
+            </div>
 
-            {/* Pinned Bottom Section */}
-            <div className="px-3 py-2 mt-auto pb-6">
+            {/* Pinned Footer (Settings) */}
+            <div className={cn(
+                "mt-auto border-t border-sidebar-border bg-sidebar",
+                isMobile && "pb-8"
+            )}>
                 <Link
                     href="/settings"
                     onClick={onNavigate}
                     className={cn(
-                        "flex items-center rounded-md font-medium transition-all duration-200 relative group/link text-sm",
-                        effectiveCollapsed ? "gap-0 justify-center px-2" : "gap-3 pl-[15px] pr-3",
-                        isMobile ? "px-3 py-3" : "py-1.5",
-                        pathname === "/settings" || pathname?.startsWith("/settings/") ? "text-primary" : "text-muted-foreground hover:text-foreground"
+                        "flex items-center text-sm font-medium transition-colors group/item relative h-16",
+                        (pathname === "/settings" || pathname?.startsWith("/settings/"))
+                            ? "text-sidebar-primary bg-sidebar-accent/50"
+                            : "text-muted-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent/20"
                     )}
                     title="Settings"
                 >
-                    {(pathname === "/settings" || pathname?.startsWith("/settings/")) && <div className={cn("absolute left-0 top-1/2 -translate-y-1/2 bg-primary rounded-r-full", isMobile ? "w-1 h-6" : "w-0.5 h-4 -ml-2")} />}
-                    <Settings className={cn(
-                        "shrink-0 transition-transform duration-300",
-                        isMobile ? "h-5 w-5" : "h-4 w-4",
-                        (pathname === "/settings" || pathname?.startsWith("/settings/")) && "text-primary"
-                    )} />
-                    <span
-                        style={{
-                            transition: effectiveCollapsed
-                                ? 'opacity 100ms ease-out, transform 100ms ease-out'
-                                : 'opacity 150ms ease-out 50ms, transform 150ms ease-out 50ms'
-                        }}
-                        className={cn(
-                            "truncate whitespace-nowrap",
-                            effectiveCollapsed ? "opacity-0 scale-95 w-0 overflow-hidden" : "opacity-100 scale-100"
-                        )}
-                    >
+                    {/* ICON ZONE - Matching above */}
+                    <div className={cn(
+                        "flex items-center justify-center shrink-0",
+                        ICON_ZONE_WIDTH,
+                        "h-full"
+                    )}>
+                        <Settings className={cn(
+                            "transition-all duration-300",
+                            isMobile ? "h-6 w-6" : "h-5 w-5",
+                            (pathname === "/settings" || pathname?.startsWith("/settings/"))
+                                ? "text-sidebar-primary"
+                                : "text-muted-foreground group-hover/item:text-sidebar-foreground"
+                        )} />
+                    </div>
+
+                    {/* Active Border */}
+                    {(pathname === "/settings" || pathname?.startsWith("/settings/")) && (
+                        <div className="absolute left-0 top-1/2 -translate-y-1/2 h-8 w-[3px] bg-primary rounded-r-full" />
+                    )}
+
+                    <span className={cn(
+                        "truncate transition-all duration-300 pr-4",
+                        effectiveCollapsed
+                            ? "opacity-0 w-0 -translate-x-4"
+                            : "opacity-100 w-auto translate-x-0"
+                    )}>
                         Settings
                     </span>
                 </Link>

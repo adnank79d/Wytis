@@ -1,5 +1,5 @@
 @import "tailwindcss";
-/* Force cache bust ID: 23 - DENSE SPACING UPDATE */
+/* Force cache bust ID: 49 - MOBILE SIDEBAR OPTIMIZED */
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
