@@ -1,5 +1,5 @@
 @import "tailwindcss";
-/* Force cache bust ID: 50 - MOBILE SPACING OPTIMIZED */
+/* Force cache bust ID: 51 - COMPACT MOBILE DESIGN */
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));

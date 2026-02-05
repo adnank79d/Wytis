@@ -63,13 +63,13 @@ export function NewSidebar({ className, isMobile = false, onNavigate }: SidebarP
     // Mobile: Return touch-friendly drawer trigger (handled by parent)
     if (isMobile) {
         return (
-            <div className="flex flex-col h-full bg-background px-3 py-4">
+            <div className="flex flex-col h-full bg-background px-3 py-3">
                 {/* Mobile Navigation Items */}
-                <nav className="flex-1 flex flex-col gap-3">
+                <nav className="flex-1 flex flex-col gap-2">
                     {sidebarGroups.map((group, groupIdx) => (
                         <div key={groupIdx}>
                             {/* Section Header */}
-                            <div className="mb-2">
+                            <div className="mb-1.5">
                                 <h4 className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider px-1">
                                     {group.title}
                                 </h4>
@@ -86,7 +86,7 @@ export function NewSidebar({ className, isMobile = false, onNavigate }: SidebarP
                                             href={item.href}
                                             onClick={onNavigate}
                                             className={cn(
-                                                "flex items-center gap-3 px-3 py-2.5 rounded-md",
+                                                "flex items-center gap-2.5 px-2.5 py-2 rounded-md",
                                                 "transition-all duration-150",
                                                 "active:scale-95", // Touch feedback
                                                 isActive
@@ -94,10 +94,10 @@ export function NewSidebar({ className, isMobile = false, onNavigate }: SidebarP
                                                     : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
                                             )}
                                         >
-                                            <item.icon className="h-5 w-5 shrink-0" />
-                                            <span className="text-base">{item.label}</span>
+                                            <item.icon className="h-4 w-4 shrink-0" />
+                                            <span className="text-sm">{item.label}</span>
                                             {isActive && (
-                                                <div className="ml-auto w-1 h-5 bg-primary rounded-l" />
+                                                <div className="ml-auto w-1 h-4 bg-primary rounded-l" />
                                             )}
                                         </Link>
                                     );
@@ -108,12 +108,12 @@ export function NewSidebar({ className, isMobile = false, onNavigate }: SidebarP
                 </nav>
 
                 {/* Settings - Bottom */}
-                <div className="border-t border-border/50 pt-3 mt-auto">
+                <div className="border-t border-border/50 pt-2.5 mt-auto">
                     <Link
                         href="/settings"
                         onClick={onNavigate}
                         className={cn(
-                            "flex items-center gap-3 px-3 py-2.5 rounded-md",
+                            "flex items-center gap-2.5 px-2.5 py-2 rounded-md",
                             "transition-all duration-150",
                             "active:scale-95",
                             (pathname === "/settings" || pathname?.startsWith("/settings/"))
@@ -121,10 +121,10 @@ export function NewSidebar({ className, isMobile = false, onNavigate }: SidebarP
                                 : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
                         )}
                     >
-                        <Settings className="h-5 w-5 shrink-0" />
-                        <span className="text-base">Settings</span>
+                        <Settings className="h-4 w-4 shrink-0" />
+                        <span className="text-sm">Settings</span>
                         {(pathname === "/settings" || pathname?.startsWith("/settings/")) && (
-                            <div className="ml-auto w-1 h-5 bg-primary rounded-l" />
+                            <div className="ml-auto w-1 h-4 bg-primary rounded-l" />
                         )}
                     </Link>
                 </div>
