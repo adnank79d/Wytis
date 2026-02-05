@@ -1,5 +1,5 @@
 @import "tailwindcss";
-/* Force cache bust ID: 53 - SIDEBAR NO-SCROLL FIX */
+/* Force cache bust ID: 54 - SMOOTH ANIMATIONS */
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));

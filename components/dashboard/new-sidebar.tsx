@@ -57,43 +57,115 @@ const utilitiesGroup = {
 interface SidebarProps {
     className?: string;
     isMobile?: boolean;
+    isOpen?: boolean;
+    onClose?: () => void;
     onNavigate?: () => void;
 }
 
-export function NewSidebar({ className, isMobile = false, onNavigate }: SidebarProps) {
+export function NewSidebar({ className, isMobile = false, isOpen = false, onClose, onNavigate }: SidebarProps) {
     const pathname = usePathname();
-    const [isExpanded, setIsExpanded] = React.useState(true);
 
-    // Mobile: Touch-friendly slide-over panel
+    const handleNavigation = () => {
+        if (onNavigate) onNavigate();
+        if (isMobile && onClose) onClose();
+    };
+
+    // Mobile: Slide-over with backdrop
     if (isMobile) {
         return (
-            <div className="flex flex-col h-full bg-background">
-                {/* Mobile Navigation */}
-                <nav className="flex-1 flex flex-col px-4 py-4">
-                    {/* Main Navigation */}
-                    <div className="flex flex-col gap-3">
-                        {mainNavigationGroups.map((group, groupIdx) => (
-                            <div key={groupIdx}>
-                                {/* Group Label */}
+            <>
+                {/* Backdrop - Fade only */}
+                <div
+                    className={cn(
+                        "fixed inset-0 bg-black/50 z-40 transition-opacity duration-200",
+                        isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+                    )}
+                    onClick={onClose}
+                    aria-hidden="true"
+                />
+
+                {/* Sidebar Panel - Slide with transform */}
+                <aside
+                    className={cn(
+                        "fixed top-0 left-0 bottom-0 z-50 w-[280px]",
+                        "bg-background border-r border-border/50",
+                        "transition-transform duration-200 ease-out",
+                        "will-change-transform", // GPU acceleration hint
+                        isOpen ? "translate-x-0" : "-translate-x-full",
+                        className
+                    )}
+                    data-version="smooth-v1-mobile"
+                >
+                    <div className="flex flex-col h-full">
+                        {/* Mobile Navigation */}
+                        <nav className="flex-1 flex flex-col px-4 py-4 overflow-y-auto">
+                            {/* Main Navigation */}
+                            <div className="flex flex-col gap-3">
+                                {mainNavigationGroups.map((group, groupIdx) => (
+                                    <div key={groupIdx}>
+                                        {/* Group Label */}
+                                        <div className="mb-2 px-2">
+                                            <h4 className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider">
+                                                {group.title}
+                                            </h4>
+                                        </div>
+
+                                        {/* Group Items */}
+                                        <div className="flex flex-col gap-0.5">
+                                            {group.items.map((item) => {
+                                                const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`);
+
+                                                return (
+                                                    <Link
+                                                        key={item.href}
+                                                        href={item.href}
+                                                        onClick={handleNavigation}
+                                                        className={cn(
+                                                            "flex items-center gap-3 px-3 py-2.5 rounded-md",
+                                                            "transition-colors duration-150",
+                                                            "active:scale-[0.98]",
+                                                            isActive
+                                                                ? "bg-primary/10 text-primary font-medium"
+                                                                : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
+                                                        )}
+                                                    >
+                                                        <item.icon className="h-5 w-5 shrink-0" />
+                                                        <span className="text-sm">{item.label}</span>
+                                                        {isActive && (
+                                                            <div className="ml-auto w-1 h-5 bg-primary rounded-l" />
+                                                        )}
+                                                    </Link>
+                                                );
+                                            })}
+                                        </div>
+
+                                        {/* Divider */}
+                                        {groupIdx < mainNavigationGroups.length - 1 && (
+                                            <div className="h-px bg-border/30 my-3" />
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Utilities - Bottom */}
+                            <div className="mt-auto pt-3 border-t border-border/30">
                                 <div className="mb-2 px-2">
                                     <h4 className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider">
-                                        {group.title}
+                                        {utilitiesGroup.title}
                                     </h4>
                                 </div>
-
-                                {/* Group Items */}
                                 <div className="flex flex-col gap-0.5">
-                                    {group.items.map((item) => {
+                                    {utilitiesGroup.items.map((item) => {
                                         const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`);
 
                                         return (
                                             <Link
                                                 key={item.href}
                                                 href={item.href}
-                                                onClick={onNavigate}
+                                                onClick={handleNavigation}
                                                 className={cn(
                                                     "flex items-center gap-3 px-3 py-2.5 rounded-md",
-                                                    "transition-all duration-150",
+                                                    "transition-colors duration-150",
                                                     "active:scale-[0.98]",
                                                     isActive
                                                         ? "bg-primary/10 text-primary font-medium"
@@ -109,84 +181,35 @@ export function NewSidebar({ className, isMobile = false, onNavigate }: SidebarP
                                         );
                                     })}
                                 </div>
-
-                                {/* Divider after each group */}
-                                {groupIdx < mainNavigationGroups.length - 1 && (
-                                    <div className="h-px bg-border/30 my-3" />
-                                )}
                             </div>
-                        ))}
+                        </nav>
                     </div>
-
-                    {/* Utilities - Bottom */}
-                    <div className="mt-auto pt-3 border-t border-border/30">
-                        <div className="mb-2 px-2">
-                            <h4 className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider">
-                                {utilitiesGroup.title}
-                            </h4>
-                        </div>
-                        <div className="flex flex-col gap-0.5">
-                            {utilitiesGroup.items.map((item) => {
-                                const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`);
-
-                                return (
-                                    <Link
-                                        key={item.href}
-                                        href={item.href}
-                                        onClick={onNavigate}
-                                        className={cn(
-                                            "flex items-center gap-3 px-3 py-2.5 rounded-md",
-                                            "transition-all duration-150",
-                                            "active:scale-[0.98]",
-                                            isActive
-                                                ? "bg-primary/10 text-primary font-medium"
-                                                : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
-                                        )}
-                                    >
-                                        <item.icon className="h-5 w-5 shrink-0" />
-                                        <span className="text-sm">{item.label}</span>
-                                        {isActive && (
-                                            <div className="ml-auto w-1 h-5 bg-primary rounded-l" />
-                                        )}
-                                    </Link>
-                                );
-                            })}
-                        </div>
-                    </div>
-                </nav>
-            </div>
+                </aside>
+            </>
         );
     }
 
-    // Desktop/Tablet: Expandable sidebar with NO SCROLL
+    // Desktop: Always visible, hover to expand labels
     return (
         <aside
-            onMouseEnter={() => setIsExpanded(true)}
-            onMouseLeave={() => setIsExpanded(false)}
             className={cn(
                 "flex flex-col h-full bg-background border-r border-border/50",
-                "transition-all duration-200 ease-out",
-                isExpanded ? "w-60" : "w-16",
+                "w-16 group/sidebar hover:w-60",
+                "transition-[width] duration-200 ease-out",
                 className
             )}
-            data-version="redesign-v2-no-scroll"
+            data-version="smooth-v1-desktop"
         >
             {/* Main Navigation - Takes available space */}
             <nav className="flex-1 min-h-0 flex flex-col gap-4 py-4 overflow-hidden">
                 {mainNavigationGroups.map((group, groupIdx) => (
                     <div key={groupIdx}>
                         {/* Group Label */}
-                        <div className={cn(
-                            "mb-2 px-3",
-                            !isExpanded && "flex justify-center"
-                        )}>
-                            {isExpanded ? (
-                                <h4 className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider">
-                                    {group.title}
-                                </h4>
-                            ) : (
-                                <div className="w-1 h-3 bg-border/50 rounded-full" />
-                            )}
+                        <div className="mb-2 px-3 flex justify-start">
+                            <div className="group-hover/sidebar:hidden w-1 h-3 bg-border/50 rounded-full" />
+                            <h4 className="hidden group-hover/sidebar:block text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider">
+                                {group.title}
+                            </h4>
                         </div>
 
                         {/* Group Items */}
@@ -201,7 +224,7 @@ export function NewSidebar({ className, isMobile = false, onNavigate }: SidebarP
                                         onClick={onNavigate}
                                         className={cn(
                                             "relative flex items-center h-9 rounded-md",
-                                            "transition-all duration-150",
+                                            "transition-colors duration-150",
                                             "group/item",
                                             isActive
                                                 ? "bg-primary/10 text-primary font-medium"
@@ -216,12 +239,12 @@ export function NewSidebar({ className, isMobile = false, onNavigate }: SidebarP
                                             )} />
                                         </div>
 
-                                        {/* Label */}
+                                        {/* Label - Fades in on hover */}
                                         <span className={cn(
-                                            "text-sm font-medium whitespace-nowrap transition-all duration-200",
-                                            isExpanded
-                                                ? "opacity-100 translate-x-0"
-                                                : "opacity-0 -translate-x-2 w-0 overflow-hidden"
+                                            "text-sm font-medium whitespace-nowrap",
+                                            "opacity-0 group-hover/sidebar:opacity-100",
+                                            "transition-opacity duration-200",
+                                            "overflow-hidden"
                                         )}>
                                             {item.label}
                                         </span>
@@ -235,12 +258,9 @@ export function NewSidebar({ className, isMobile = false, onNavigate }: SidebarP
                             })}
                         </div>
 
-                        {/* Divider after each group */}
+                        {/* Divider */}
                         {groupIdx < mainNavigationGroups.length - 1 && (
-                            <div className={cn(
-                                "h-px bg-border/30 mt-3",
-                                !isExpanded && "mx-3"
-                            )} />
+                            <div className="h-px bg-border/30 mt-3 mx-3" />
                         )}
                     </div>
                 ))}
@@ -248,17 +268,11 @@ export function NewSidebar({ className, isMobile = false, onNavigate }: SidebarP
 
             {/* Utilities - Anchored to Bottom */}
             <div className="flex-shrink-0 border-t border-border/30 py-3">
-                <div className={cn(
-                    "mb-2 px-3",
-                    !isExpanded && "flex justify-center"
-                )}>
-                    {isExpanded ? (
-                        <h4 className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider">
-                            {utilitiesGroup.title}
-                        </h4>
-                    ) : (
-                        <div className="w-1 h-3 bg-border/50 rounded-full" />
-                    )}
+                <div className="mb-2 px-3 flex justify-start">
+                    <div className="group-hover/sidebar:hidden w-1 h-3 bg-border/50 rounded-full" />
+                    <h4 className="hidden group-hover/sidebar:block text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider">
+                        {utilitiesGroup.title}
+                    </h4>
                 </div>
 
                 <div className="flex flex-col gap-0.5 px-3">
@@ -272,7 +286,7 @@ export function NewSidebar({ className, isMobile = false, onNavigate }: SidebarP
                                 onClick={onNavigate}
                                 className={cn(
                                     "relative flex items-center h-9 rounded-md",
-                                    "transition-all duration-150",
+                                    "transition-colors duration-150",
                                     isActive
                                         ? "bg-primary/10 text-primary font-medium"
                                         : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
@@ -286,10 +300,10 @@ export function NewSidebar({ className, isMobile = false, onNavigate }: SidebarP
                                 </div>
 
                                 <span className={cn(
-                                    "text-sm font-medium whitespace-nowrap transition-all duration-200",
-                                    isExpanded
-                                        ? "opacity-100 translate-x-0"
-                                        : "opacity-0 -translate-x-2 w-0 overflow-hidden"
+                                    "text-sm font-medium whitespace-nowrap",
+                                    "opacity-0 group-hover/sidebar:opacity-100",
+                                    "transition-opacity duration-200",
+                                    "overflow-hidden"
                                 )}>
                                     {item.label}
                                 </span>
