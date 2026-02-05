@@ -1,5 +1,5 @@
 @import "tailwindcss";
-/* Force cache bust ID: 48 - REDUCED NAVBAR GAP (py-2) */
+/* Force cache bust ID: 49 - MOBILE SIDEBAR OPTIMIZED */
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
