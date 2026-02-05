@@ -1,7 +1,7 @@
 "use client";
 
 import { NewSidebar as SidebarComponent } from "./new-sidebar";
-import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 interface ClientSidebarWrapperProps {
     className?: string;
@@ -10,13 +10,39 @@ interface ClientSidebarWrapperProps {
 }
 
 export function ClientSidebarWrapper({ className, isMobile, onNavigate }: ClientSidebarWrapperProps) {
-    const router = useRouter();
+    const [isOpen, setIsOpen] = useState(false);
 
+    // For mobile, manage open/close state
+    if (isMobile) {
+        return (
+            <SidebarComponent
+                className={className}
+                isMobile={isMobile}
+                isOpen={isOpen}
+                onClose={() => setIsOpen(false)}
+                onNavigate={onNavigate}
+            />
+        );
+    }
+
+    // For desktop, no state management needed (hover-based)
     return (
         <SidebarComponent
             className={className}
-            isMobile={isMobile}
+            isMobile={false}
             onNavigate={onNavigate}
         />
     );
+}
+
+// Export hook for parent components to trigger mobile sidebar
+export function useMobileSidebar() {
+    const [isOpen, setIsOpen] = useState(false);
+
+    return {
+        isOpen,
+        open: () => setIsOpen(true),
+        close: () => setIsOpen(false),
+        toggle: () => setIsOpen(prev => !prev),
+    };
 }
