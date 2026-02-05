@@ -94,23 +94,10 @@ export function Header({ userRole, businessName, userEmail, userName }: HeaderPr
                             <span className="sr-only">Toggle menu</span>
                         </Button>
                     </SheetTrigger>
-                    <SheetContent side="left" className="p-0 border-r w-[280px]">
-                        <div className="flex items-center h-12 border-b px-4">
-                            <Link href="/dashboard" className="flex items-center gap-2">
-                                <Image
-                                    src="/logo.png"
-                                    alt="Wytis"
-                                    width={100}
-                                    height={32}
-                                    className="h-6 w-auto object-contain"
-                                    priority
-                                />
-                            </Link>
-                        </div>
+                    <SheetContent side="left" className="p-0 w-[280px] flex flex-col">
                         <NewSidebar
                             isMobile={true}
-                            isOpen={true}
-                            className="border-none"
+                            className="flex-1 border-none"
                         />
                     </SheetContent>
                 </Sheet>

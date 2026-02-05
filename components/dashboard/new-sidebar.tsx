@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+import * as DialogPrimitive from "@radix-ui/react-dialog";
 import {
     LayoutDashboard,
     Receipt,
@@ -18,6 +19,7 @@ import {
     Settings,
     CreditCard,
     HelpCircle,
+    X,
 } from "lucide-react";
 import * as React from "react";
 
@@ -71,128 +73,47 @@ export function NewSidebar({ className, isMobile = false, isOpen = false, onClos
         if (isMobile && onClose) onClose();
     };
 
-    // Mobile: Slide-over with backdrop
+    // Mobile: Simplified for use inside Sheet component
     if (isMobile) {
         return (
-            <>
-                {/* Backdrop - Fade only */}
-                <div
-                    className={cn(
-                        "fixed inset-0 bg-black/50 z-40 transition-opacity duration-200",
-                        isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
-                    )}
-                    onClick={onClose}
-                    aria-hidden="true"
-                />
+            <div className={cn("flex flex-col h-full bg-background", className)}>
+                {/* Mobile-Only Header with Logo and Close */}
+                <div className="flex items-center justify-between h-14 px-4 border-b border-border/50 shrink-0">
+                    <div className="flex items-center gap-2">
+                        <Image
+                            src="/logo.png"
+                            alt="Wytis"
+                            width={100}
+                            height={32}
+                            className="h-7 w-auto object-contain"
+                            priority
+                            aria-label="Wytis"
+                        />
+                    </div>
+                    <DialogPrimitive.Close
+                        className="flex items-center justify-center h-8 w-8 rounded-md hover:bg-accent/50 transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                        aria-label="Close sidebar"
+                    >
+                        <X className="h-5 w-5 text-muted-foreground" />
+                    </DialogPrimitive.Close>
+                </div>
 
-                {/* Sidebar Panel - Slide with transform */}
-                <aside
-                    className={cn(
-                        "fixed top-0 left-0 bottom-0 z-50 w-[280px]",
-                        "bg-background border-r border-border/50",
-                        "transition-transform duration-200 ease-out",
-                        "will-change-transform", // GPU acceleration hint
-                        isOpen ? "translate-x-0" : "-translate-x-full",
-                        className
-                    )}
-                    data-version="smooth-v2-mobile-header"
-                >
-                    <div className="flex flex-col h-full">
-                        {/* Mobile-Only Header with Logo and Close */}
-                        <div className="flex items-center justify-between h-14 px-4 border-b border-border/50 shrink-0">
-                            <div className="flex items-center gap-2">
-                                <Image
-                                    src="/logo.png"
-                                    alt="Wytis"
-                                    width={100}
-                                    height={32}
-                                    className="h-7 w-auto object-contain"
-                                    priority
-                                    aria-label="Wytis"
-                                />
-                            </div>
-                            <button
-                                onClick={onClose}
-                                className="flex items-center justify-center h-8 w-8 rounded-md hover:bg-accent/50 transition-colors"
-                                aria-label="Close sidebar"
-                            >
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="20"
-                                    height="20"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth="2"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    className="text-muted-foreground"
-                                >
-                                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                                    <line x1="6" y1="6" x2="18" y2="18"></line>
-                                </svg>
-                            </button>
-                        </div>
-
-                        {/* Mobile Navigation */}
-                        <nav className="flex-1 flex flex-col px-4 py-4 overflow-y-auto">
-                            {/* Main Navigation */}
-                            <div className="flex flex-col gap-3">
-                                {mainNavigationGroups.map((group, groupIdx) => (
-                                    <div key={groupIdx}>
-                                        {/* Group Label */}
-                                        <div className="mb-2 px-2">
-                                            <h4 className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider">
-                                                {group.title}
-                                            </h4>
-                                        </div>
-
-                                        {/* Group Items */}
-                                        <div className="flex flex-col gap-0.5">
-                                            {group.items.map((item) => {
-                                                const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`);
-
-                                                return (
-                                                    <Link
-                                                        key={item.href}
-                                                        href={item.href}
-                                                        onClick={handleNavigation}
-                                                        className={cn(
-                                                            "flex items-center gap-3 px-3 py-2.5 rounded-md",
-                                                            "transition-colors duration-150",
-                                                            "active:scale-[0.98]",
-                                                            isActive
-                                                                ? "bg-primary/10 text-primary font-medium"
-                                                                : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
-                                                        )}
-                                                    >
-                                                        <item.icon className="h-5 w-5 shrink-0" />
-                                                        <span className="text-sm">{item.label}</span>
-                                                        {isActive && (
-                                                            <div className="ml-auto w-1 h-5 bg-primary rounded-l" />
-                                                        )}
-                                                    </Link>
-                                                );
-                                            })}
-                                        </div>
-
-                                        {/* Divider */}
-                                        {groupIdx < mainNavigationGroups.length - 1 && (
-                                            <div className="h-px bg-border/30 my-3" />
-                                        )}
-                                    </div>
-                                ))}
-                            </div>
-
-                            {/* Utilities - Bottom */}
-                            <div className="mt-auto pt-3 border-t border-border/30">
+                {/* Mobile Navigation */}
+                <nav className="flex-1 flex flex-col px-4 py-4 overflow-y-auto">
+                    {/* Main Navigation */}
+                    <div className="flex flex-col gap-3">
+                        {mainNavigationGroups.map((group, groupIdx) => (
+                            <div key={groupIdx}>
+                                {/* Group Label */}
                                 <div className="mb-2 px-2">
                                     <h4 className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider">
-                                        {utilitiesGroup.title}
+                                        {group.title}
                                     </h4>
                                 </div>
+
+                                {/* Group Items */}
                                 <div className="flex flex-col gap-0.5">
-                                    {utilitiesGroup.items.map((item) => {
+                                    {group.items.map((item) => {
                                         const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`);
 
                                         return (
@@ -218,11 +139,52 @@ export function NewSidebar({ className, isMobile = false, isOpen = false, onClos
                                         );
                                     })}
                                 </div>
+
+                                {/* Divider */}
+                                {groupIdx < mainNavigationGroups.length - 1 && (
+                                    <div className="h-px bg-border/30 my-3" />
+                                )}
                             </div>
-                        </nav>
+                        ))}
                     </div>
-                </aside>
-            </>
+
+                    {/* Utilities - Bottom */}
+                    <div className="mt-auto pt-3 border-t border-border/30">
+                        <div className="mb-2 px-2">
+                            <h4 className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider">
+                                {utilitiesGroup.title}
+                            </h4>
+                        </div>
+                        <div className="flex flex-col gap-0.5">
+                            {utilitiesGroup.items.map((item) => {
+                                const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`);
+
+                                return (
+                                    <Link
+                                        key={item.href}
+                                        href={item.href}
+                                        onClick={handleNavigation}
+                                        className={cn(
+                                            "flex items-center gap-3 px-3 py-2.5 rounded-md",
+                                            "transition-colors duration-150",
+                                            "active:scale-[0.98]",
+                                            isActive
+                                                ? "bg-primary/10 text-primary font-medium"
+                                                : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
+                                        )}
+                                    >
+                                        <item.icon className="h-5 w-5 shrink-0" />
+                                        <span className="text-sm">{item.label}</span>
+                                        {isActive && (
+                                            <div className="ml-auto w-1 h-5 bg-primary rounded-l" />
+                                        )}
+                                    </Link>
+                                );
+                            })}
+                        </div>
+                    </div>
+                </nav>
+            </div>
         );
     }
 
@@ -235,7 +197,7 @@ export function NewSidebar({ className, isMobile = false, isOpen = false, onClos
                 "transition-[width] duration-200 ease-out",
                 className
             )}
-            data-version="smooth-v1-desktop"
+            data-version="smooth-v3-sheet-fixed"
         >
             {/* Main Navigation - Takes available space */}
             <nav className="flex-1 min-h-0 flex flex-col gap-4 py-4 overflow-hidden">
