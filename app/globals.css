@@ -1,5 +1,5 @@
 @import "tailwindcss";
-/* Force cache bust ID: 52 - SIDEBAR REDESIGN V1 */
+/* Force cache bust ID: 53 - SIDEBAR NO-SCROLL FIX */
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
