@@ -37,6 +37,8 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 
+import { HeroAnimation } from "@/components/marketing/hero-animation";
+
 
 
 export default function LandingPage() {
@@ -47,6 +49,9 @@ export default function LandingPage() {
       {/* 1. HERO SECTION - REDESIGNED */}
       {/* 1. HERO SECTION - CENTERED */}
       <section className="w-full pt-8 md:pt-12 lg:pt-16 pb-10 md:pb-20 bg-background border-b border-border/40 relative overflow-hidden">
+        {/* Animated Background */}
+        <HeroAnimation />
+
         {/* Hero Content */}
         <div className="w-full max-w-[1280px] mx-auto px-4 md:px-6 relative z-10">
           <div className="flex flex-col items-center text-center gap-6 md:gap-10">
@@ -54,19 +59,19 @@ export default function LandingPage() {
             {/* Top: Text & CTAs */}
             <div className="flex flex-col items-center space-y-4 md:space-y-6 max-w-3xl mx-auto">
               <div className="space-y-3 md:space-y-5 flex flex-col items-center">
-                <div className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/5 px-2.5 py-0.5 md:px-3 md:py-1 text-[10px] md:text-xs font-medium text-primary shadow-sm animate-hero-entrance opacity-0">
+                <div className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/5 px-2.5 py-0.5 md:px-3 md:py-1 text-[10px] md:text-xs font-medium text-primary shadow-sm">
                   <div className="h-1 w-1 md:h-1.5 md:w-1.5 rounded-full bg-primary animate-pulse" />
                   Powered by Wytis AI
                 </div>
-                <h1 className="text-2xl md:text-4xl lg:text-5xl font-semibold tracking-tight text-foreground leading-[1.15] md:leading-[1.1] animate-hero-entrance-delay-1 opacity-0">
+                <h1 className="text-2xl md:text-4xl lg:text-5xl font-semibold tracking-tight text-foreground leading-[1.15] md:leading-[1.1]">
                   Run your entire business <br className="hidden md:block" /> on one intelligent system.
                 </h1>
-                <p className="text-sm md:text-lg text-muted-foreground leading-relaxed max-w-xl mx-auto animate-hero-entrance-delay-2 opacity-0">
+                <p className="text-sm md:text-lg text-muted-foreground leading-relaxed max-w-xl mx-auto">
                   Wytis unifies finance, compliance, and operations into a single, working system.
                 </p>
               </div>
 
-              <div className="flex flex-col gap-4 md:gap-6 items-center w-full animate-hero-entrance-delay-3 opacity-0">
+              <div className="flex flex-col gap-4 md:gap-6 items-center w-full">
                 <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center w-full sm:w-auto">
                   <Link href="/signup">
                     <Button size="lg" className="h-10 md:h-11 px-6 md:px-8 rounded-lg text-sm md:text-base font-medium w-full sm:w-auto">
@@ -86,7 +91,7 @@ export default function LandingPage() {
             </div>
 
             {/* Bottom: Dashboard Screenshot - Boxed & Smaller */}
-            <div className="relative w-full max-w-5xl mx-auto mt-8 p-2 rounded-xl border bg-background/50 shadow-xl shadow-primary/5 animate-hero-entrance-delay-4 opacity-0">
+            <div className="relative w-full max-w-5xl mx-auto mt-8 p-2 rounded-xl border bg-background/50 shadow-xl shadow-primary/5">
               {/* Inner aspect container with its own border/rounding */}
               <div className="aspect-[16/10] relative rounded-xl border bg-muted/20 overflow-hidden">
                 <Image
