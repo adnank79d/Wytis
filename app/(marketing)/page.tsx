@@ -37,8 +37,6 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 
-import { HeroAnimation } from "@/components/marketing/hero-animation";
-
 
 
 export default function LandingPage() {
@@ -48,12 +46,9 @@ export default function LandingPage() {
       {/* 1. HERO SECTION */}
       {/* 1. HERO SECTION - REDESIGNED */}
       {/* 1. HERO SECTION - CENTERED */}
-      <section className="w-full pt-8 md:pt-12 lg:pt-16 pb-10 md:pb-20 bg-background border-b border-border/40 relative overflow-hidden">
-        {/* Animated Background */}
-        <HeroAnimation />
-
+      <section className="w-full pt-8 md:pt-12 lg:pt-16 pb-10 md:pb-20 bg-background border-b border-border/40">
         {/* Hero Content */}
-        <div className="w-full max-w-[1280px] mx-auto px-4 md:px-6 relative z-10">
+        <div className="w-full max-w-[1280px] mx-auto px-4 md:px-6">
           <div className="flex flex-col items-center text-center gap-6 md:gap-10">
 
             {/* Top: Text & CTAs */}
