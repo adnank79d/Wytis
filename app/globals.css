@@ -155,3 +155,88 @@
     @apply bg-background text-foreground font-sans;
   }
 }
+
+/* Subtle Hero Background Animations */
+@keyframes ambient-drift-1 {
+
+  0%,
+  100% {
+    transform: translate(0, 0);
+    opacity: 0.4;
+  }
+
+  50% {
+    transform: translate(40px, -30px);
+    opacity: 0.6;
+  }
+}
+
+@keyframes ambient-drift-2 {
+
+  0%,
+  100% {
+    transform: translate(0, 0);
+    opacity: 0.4;
+  }
+
+  50% {
+    transform: translate(-40px, 30px);
+    opacity: 0.6;
+  }
+}
+
+@keyframes ambient-pulse {
+
+  0%,
+  100% {
+    opacity: 0.2;
+    transform: translate(-50%, -50%) scale(1);
+  }
+
+  50% {
+    opacity: 0.3;
+    transform: translate(-50%, -50%) scale(1.1);
+  }
+}
+
+@keyframes gradient-shift {
+
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+
+  50% {
+    opacity: 0.8;
+  }
+}
+
+/* Apply animations only if user has no motion preference */
+@media (prefers-reduced-motion: no-preference) {
+  .animate-ambient-drift-1 {
+    animation: ambient-drift-1 18s ease-in-out infinite;
+  }
+
+  .animate-ambient-drift-2 {
+    animation: ambient-drift-2 20s ease-in-out infinite;
+  }
+
+  .animate-ambient-pulse {
+    animation: ambient-pulse 15s ease-in-out infinite;
+  }
+
+  .animate-gradient-shift {
+    animation: gradient-shift 12s ease-in-out infinite;
+  }
+}
+
+/* Static background for reduced motion */
+@media (prefers-reduced-motion: reduce) {
+
+  .animate-ambient-drift-1,
+  .animate-ambient-drift-2,
+  .animate-ambient-pulse,
+  .animate-gradient-shift {
+    animation: none;
+  }
+}
