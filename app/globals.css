@@ -156,102 +156,57 @@
   }
 }
 
-/* Hero Animation Keyframes */
-@keyframes float-slow {
-
-  0%,
-  100% {
-    transform: translate(0, 0) scale(1);
+/* Premium Hero Entrance Animation */
+@keyframes hero-entrance {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
   }
 
-  33% {
-    transform: translate(30px, -30px) scale(1.05);
-  }
-
-  66% {
-    transform: translate(-20px, 20px) scale(0.95);
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
-@keyframes float-medium {
-
-  0%,
-  100% {
-    transform: translate(0, 0) scale(1);
-  }
-
-  50% {
-    transform: translate(-25px, 25px) scale(1.08);
-  }
-}
-
-@keyframes float-slower {
-
-  0%,
-  100% {
-    transform: translate(0, 0) scale(1);
-  }
-
-  50% {
-    transform: translate(40px, -20px) scale(0.92);
-  }
-}
-
-@keyframes float-fast {
-
-  0%,
-  100% {
-    transform: translateY(0px);
-  }
-
-  50% {
-    transform: translateY(-20px);
-  }
-}
-
-@keyframes gradient {
-
-  0%,
-  100% {
-    opacity: 0.3;
-  }
-
-  50% {
-    opacity: 0.6;
-  }
-}
-
-/* Animation classes with prefers-reduced-motion support */
+/* Entrance animation classes with staggered delays */
 @media (prefers-reduced-motion: no-preference) {
-  .animate-float-slow {
-    animation: float-slow 20s ease-in-out infinite;
+  .animate-hero-entrance {
+    animation: hero-entrance 800ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    animation-delay: 100ms;
   }
 
-  .animate-float-medium {
-    animation: float-medium 15s ease-in-out infinite;
+  .animate-hero-entrance-delay-1 {
+    animation: hero-entrance 800ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    animation-delay: 200ms;
   }
 
-  .animate-float-slower {
-    animation: float-slower 25s ease-in-out infinite;
+  .animate-hero-entrance-delay-2 {
+    animation: hero-entrance 800ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    animation-delay: 320ms;
   }
 
-  .animate-float-fast {
-    animation: float-fast 8s ease-in-out infinite;
+  .animate-hero-entrance-delay-3 {
+    animation: hero-entrance 800ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    animation-delay: 440ms;
   }
 
-  .animate-gradient {
-    animation: gradient 10s ease-in-out infinite;
+  .animate-hero-entrance-delay-4 {
+    animation: hero-entrance 900ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    animation-delay: 560ms;
   }
 }
 
-/* Disable animations for users who prefer reduced motion */
+/* Instant appearance for users who prefer reduced motion */
 @media (prefers-reduced-motion: reduce) {
 
-  .animate-float-slow,
-  .animate-float-medium,
-  .animate-float-slower,
-  .animate-float-fast,
-  .animate-gradient {
+  .animate-hero-entrance,
+  .animate-hero-entrance-delay-1,
+  .animate-hero-entrance-delay-2,
+  .animate-hero-entrance-delay-3,
+  .animate-hero-entrance-delay-4 {
     animation: none;
+    opacity: 1;
+    transform: none;
   }
 }
